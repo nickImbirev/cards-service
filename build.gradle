@@ -1,0 +1,35 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+group 'org.cards_tracker'
+version '1.0-SNAPSHOT'
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'org.cards_tracker.Main'
+        )
+    }
+}
+
+application {
+    mainClass = 'org.cards_tracker.Main'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains:annotations:23.0.0"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.13.3"
+    implementation "io.javalin:javalin:4.6.4"
+    implementation "org.slf4j:slf4j-simple:1.7.36"
+
+    testImplementation "junit:junit:4.13.2"
+}

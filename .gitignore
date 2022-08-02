@@ -1,4 +1,7 @@
 .idea
-lib
+.gradle
 /cards-tracker.iml
 out
+build
+gradlew
+gradlew.bat
