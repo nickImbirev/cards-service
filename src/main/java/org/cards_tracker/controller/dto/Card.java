@@ -1,5 +1,7 @@
 package org.cards_tracker.controller.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.cards_tracker.error.IncorrectCardTitleException;
 import org.jetbrains.annotations.NotNull;
 
@@ -7,8 +9,9 @@ public class Card {
     @NotNull
     private final String title;
 
+    @JsonCreator
     public Card(
-            @NotNull(exception = IncorrectCardTitleException.class) final String title
+            @JsonProperty(value = "title", required = true) @NotNull(exception = IncorrectCardTitleException.class) final String title
     ) throws IncorrectCardTitleException {
         if (!isTitleValid(title)) throw new IncorrectCardTitleException(title);
         this.title = title;
