@@ -67,7 +67,7 @@ public class CardController {
                 .json(String.valueOf(HttpCode.BAD_REQUEST.getStatus()), ErrorDto.class)
                 .json(String.valueOf(HttpCode.NOT_FOUND.getStatus()), ErrorDto.class)
                 .result(String.valueOf(HttpCode.OK.getStatus()));
-        final String path = "/card";
+        final String path = "/today/card";
         try {
             app.put(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
                 final Card cardToCreate;
