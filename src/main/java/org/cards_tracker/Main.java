@@ -37,5 +37,10 @@ public class Main {
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
+        try {
+            CardController.registerCompleteCardEndpoint(app, objectMapper, cardService);
+        } catch (EndpointRegistrationException e) {
+            log.warn(e.getMessage());
+        }
     }
 }
