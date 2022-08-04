@@ -7,6 +7,7 @@ import io.javalin.plugin.openapi.OpenApiPlugin;
 import io.javalin.plugin.openapi.ui.SwaggerOptions;
 import io.swagger.v3.oas.models.info.Info;
 import org.cards_tracker.controller.CardController;
+import org.cards_tracker.controller.DailyController;
 import org.cards_tracker.controller.error.EndpointRegistrationException;
 import org.cards_tracker.service.CardService;
 import org.cards_tracker.service.ScheduledInMemoryCardService;
@@ -38,12 +39,17 @@ public class Main {
             log.warn(e.getMessage());
         }
         try {
-            CardController.registerCompleteCardEndpoint(app, objectMapper, cardService);
+            DailyController.registerCompleteCardEndpoint(app, objectMapper, cardService);
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
         try {
             CardController.registerDeleteCardEndpoint(app, objectMapper, cardService);
+        } catch (EndpointRegistrationException e) {
+            log.warn(e.getMessage());
+        }
+        try {
+            DailyController.registerGetCardsEndpoint(app, objectMapper, cardService);
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
