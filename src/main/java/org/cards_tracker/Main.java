@@ -42,5 +42,10 @@ public class Main {
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
+        try {
+            CardController.registerDeleteCardEndpoint(app, objectMapper, cardService);
+        } catch (EndpointRegistrationException e) {
+            log.warn(e.getMessage());
+        }
     }
 }

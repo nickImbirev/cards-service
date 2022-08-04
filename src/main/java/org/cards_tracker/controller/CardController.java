@@ -98,4 +98,43 @@ public class CardController {
             throw new EndpointRegistrationException(path, HttpMethod.PUT, e);
         }
     }
+
+    public static void registerDeleteCardEndpoint(@NotNull final Javalin app,
+                                                  @NotNull final ObjectMapper objectMapper,
+                                                  @NotNull final CardService cardService)
+            throws EndpointRegistrationException {
+        final OpenApiDocumentation apiDocumentation = OpenApiBuilder
+                .document()
+                .operation(operation -> {
+                    operation.description("Delete the specified card completely or do nothing in case it did not exist before.");
+                })
+                .body(Card.class)
+                .json(String.valueOf(HttpCode.BAD_REQUEST.getStatus()), ErrorDto.class)
+                .result(String.valueOf(HttpCode.NO_CONTENT.getStatus()));
+        final String path = "/card";
+        try {
+            app.delete(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
+                final Card cardToCreate;
+                try {
+                    cardToCreate = ctx.bodyAsClass(Card.class);
+                } catch (Exception e) {
+                    ctx
+                            .status(HttpCode.BAD_REQUEST)
+                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
+                    return;
+                }
+                try {
+                    cardService.removeCard(cardToCreate.getTitle());
+                } catch (IncorrectCardTitleException e) {
+                    ctx
+                            .status(HttpCode.BAD_REQUEST)
+                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
+                    return;
+                }
+                ctx.status(HttpCode.NO_CONTENT);
+            }));
+        } catch (Exception e) {
+            throw new EndpointRegistrationException(path, HttpMethod.DELETE, e);
+        }
+    }
 }
