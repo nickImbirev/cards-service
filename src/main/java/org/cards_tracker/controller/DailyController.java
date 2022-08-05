@@ -6,6 +6,7 @@ import io.javalin.http.HttpCode;
 import io.javalin.plugin.openapi.dsl.OpenApiBuilder;
 import io.javalin.plugin.openapi.dsl.OpenApiDocumentation;
 import org.cards_tracker.controller.dto.Card;
+import org.cards_tracker.controller.dto.Cards;
 import org.cards_tracker.controller.dto.ErrorDto;
 import org.cards_tracker.controller.error.EndpointRegistrationException;
 import org.cards_tracker.error.IncorrectCardTitleException;
@@ -28,13 +29,13 @@ public class DailyController {
                     operation.description("Get cards for today.");
                 })
                 .result(String.valueOf(HttpCode.INTERNAL_SERVER_ERROR.getStatus()), ErrorDto.class)
-                .result(String.valueOf(HttpCode.OK.getStatus()));
+                .result(String.valueOf(HttpCode.OK.getStatus()), Cards.class);
         final String path = "/today/cards";
         try {
             app.get(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
                 final List<String> cardsForToday = cardService.getCardsForToday();
                 try {
-                    ctx.result(objectMapper.writeValueAsBytes(cardsForToday));
+                    ctx.json(new Cards(cardsForToday));
                 } catch (Exception e) {
                     ctx
                             .status(HttpCode.INTERNAL_SERVER_ERROR)
