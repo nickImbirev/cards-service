@@ -21,13 +21,17 @@ public class Main {
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
-        final Javalin app = Javalin.create(config -> config.registerPlugin(
-                new OpenApiPlugin(
-                        new OpenApiOptions
-                                (new Info().title("Cards service").version("1.0.0").description("Cards service"))
-                                .swagger(new SwaggerOptions("/swagger-ui").title("Card service API Documentation"))
-                                .path("/swagger-docs")
-                ))).start(8081);
+        final Javalin app = Javalin.create(config -> {
+            config.registerPlugin(
+                    new OpenApiPlugin(
+                            new OpenApiOptions
+                                    (new Info().title("Cards service").version("1.0.0").description("Cards service"))
+                                    .swagger(new SwaggerOptions("/swagger-ui").title("Card service API Documentation"))
+                                    .path("/swagger-docs")
+                    ));
+            config.enableCorsForAllOrigins();
+            config.enableDevLogging();
+        }).start(8081);
 
         final ObjectMapper objectMapper = new ObjectMapper();
         CardService cardService =
