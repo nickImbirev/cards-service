@@ -28,3 +28,19 @@ Please, follow the server logs in the console to access the application.*
 *Note: service uses [Swagger](https://swagger.io/) as a primary API documentation tool. 
 You can see the available endpoints, read their descriptions and requirements, 
 also you can try them out on the running server.*
+
+
+### How to configure service
+
+In order to configure the service you can use the standard run command with an additional 'args' argument:
+``gradle run --args=''``, where the configuration arguments can be provided with a space (` `) symbol as a delimiter. 
+
+There is a possibility to configure the following service values:
+
+- maximum number of cards available for one day (first argument in the list)
+  - can be any integer starts from 1
+day cards preparation schedule
+  - the schedule period can be any integer starts from 1 (second argument in the list)
+  - the time unit can be any value from the range: (DAYS, HOURS, MINUTES, SECONDS, MILLISECONDS) (third argument in the list)
+
+Example: ``gradle run --args='5 3 MINUTES'`` (maximum number cards per day - 5, sync schedule: every 3 minutes).
