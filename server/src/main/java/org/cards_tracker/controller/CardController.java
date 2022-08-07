@@ -77,14 +77,7 @@ public class CardController {
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
                     return;
                 }
-                try {
-                    cardService.removeCard(cardToCreate.getTitle());
-                } catch (IncorrectCardTitleException e) {
-                    ctx
-                            .status(HttpCode.BAD_REQUEST)
-                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
-                    return;
-                }
+                cardService.removeCard(cardToCreate.getTitle());
                 ctx.status(HttpCode.NO_CONTENT);
             }));
         } catch (Exception e) {

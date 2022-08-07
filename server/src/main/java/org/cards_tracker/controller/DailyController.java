@@ -9,7 +9,6 @@ import org.cards_tracker.controller.dto.Card;
 import org.cards_tracker.controller.dto.Cards;
 import org.cards_tracker.controller.dto.ErrorDto;
 import org.cards_tracker.controller.error.EndpointRegistrationException;
-import org.cards_tracker.error.IncorrectCardTitleException;
 import org.cards_tracker.error.NotExistingCardException;
 import org.cards_tracker.service.CardService;
 import org.eclipse.jetty.http.HttpMethod;
@@ -61,10 +60,10 @@ public class DailyController {
                 .body(Card.class)
                 .json(String.valueOf(HttpCode.BAD_REQUEST.getStatus()), ErrorDto.class)
                 .json(String.valueOf(HttpCode.NOT_FOUND.getStatus()), ErrorDto.class)
-                .result(String.valueOf(HttpCode.OK.getStatus()));
+                .result(String.valueOf(HttpCode.NO_CONTENT.getStatus()));
         final String path = "/today/card";
         try {
-            app.put(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
+            app.delete(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
                 final Card cardToCreate;
                 try {
                     cardToCreate = ctx.bodyAsClass(Card.class);
@@ -76,21 +75,56 @@ public class DailyController {
                 }
                 try {
                     cardService.completeCardForToday(cardToCreate.getTitle());
-                } catch (IncorrectCardTitleException e) {
-                    ctx
-                            .status(HttpCode.BAD_REQUEST)
-                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
-                    return;
                 } catch (NotExistingCardException e) {
                     ctx
                             .status(HttpCode.NOT_FOUND)
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
                     return;
                 }
-                ctx.status(HttpCode.OK);
+                ctx.status(HttpCode.NO_CONTENT);
             }));
         } catch (Exception e) {
-            throw new EndpointRegistrationException(path, HttpMethod.PUT, e);
+            throw new EndpointRegistrationException(path, HttpMethod.DELETE, e);
+        }
+    }
+
+    public static void registerAddAdditionalCardEndpoint(@NotNull final Javalin app,
+                                                         @NotNull final ObjectMapper objectMapper,
+                                                         @NotNull final CardService cardService)
+            throws EndpointRegistrationException {
+        final OpenApiDocumentation apiDocumentation = OpenApiBuilder
+                .document()
+                .operation(operation -> {
+                    operation.description("Add an additional card for today.");
+                })
+                .body(Card.class)
+                .json(String.valueOf(HttpCode.BAD_REQUEST.getStatus()), ErrorDto.class)
+                .json(String.valueOf(HttpCode.NOT_FOUND.getStatus()), ErrorDto.class)
+                .result(String.valueOf(HttpCode.CREATED.getStatus()));
+        final String path = "/today/card";
+        try {
+            app.post(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
+                final Card cardToCreate;
+                try {
+                    cardToCreate = ctx.bodyAsClass(Card.class);
+                } catch (Exception e) {
+                    ctx
+                            .status(HttpCode.BAD_REQUEST)
+                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
+                    return;
+                }
+                try {
+                    cardService.addAdditionalCardForToday(cardToCreate.getTitle());
+                } catch (NotExistingCardException e) {
+                    ctx
+                            .status(HttpCode.NOT_FOUND)
+                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
+                    return;
+                }
+                ctx.status(HttpCode.CREATED);
+            }));
+        } catch (Exception e) {
+            throw new EndpointRegistrationException(path, HttpMethod.POST, e);
         }
     }
 }
