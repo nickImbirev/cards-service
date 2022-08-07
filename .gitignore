@@ -1,6 +1,6 @@
 .idea
 .gradle
-/cards-tracker.iml
+/*.iml
 out
 build
 gradlew
