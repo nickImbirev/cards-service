@@ -87,8 +87,17 @@ public class ScheduledInMemoryCardService implements CardService {
     }
 
     @Override
-    public void completeCardForToday(@NotNull String title) throws IncorrectCardTitleException, NotExistingCardException {
-        if (isTitleInvalid(title)) throw new IncorrectCardTitleException(title);
+    public void addAdditionalCardForToday(@NotNull final String title) throws NotExistingCardException {
+        if (allCards.get(title) == null) {
+            throw new NotExistingCardException(title);
+        }
+        if (cardsForToday.stream().noneMatch(card -> card.equals(title))) {
+            cardsForToday.add(title);
+        }
+    }
+
+    @Override
+    public void completeCardForToday(@NotNull String title) throws NotExistingCardException {
         if (!cardsForToday.removeIf((dayCardTitle) -> dayCardTitle.equals(title))) {
             throw new NotExistingCardException(title);
         }
@@ -96,9 +105,8 @@ public class ScheduledInMemoryCardService implements CardService {
     }
 
     @Override
-    public void removeCard(@NotNull String title) throws IncorrectCardTitleException {
+    public void removeCard(@NotNull String title) {
         if (allCards.get(title) == null) return;
-        if (isTitleInvalid(title)) throw new IncorrectCardTitleException(title);
         cardsForToday.removeIf((dayCardTitle) -> dayCardTitle.equals(title));
         allCards.remove(title);
     }
