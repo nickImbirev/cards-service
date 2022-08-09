@@ -6,7 +6,7 @@ const newCardURL = 'http://localhost:8081/card';
 
 const createNewCard = () => {
   const title = newCardInput.value;
-  sendRequest(newCardURL, 'POST', {title: title})
+  sendRequest(newCardURL, 'POST', { title: title })
     .then(response => {
       if (response.status === 201) {
         alert('New card was created!');
