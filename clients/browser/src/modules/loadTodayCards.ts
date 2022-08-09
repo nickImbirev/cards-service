@@ -1,4 +1,4 @@
-import { createNode } from '../helpers/createNode';
+import { collectCardContent } from '../helpers/collectCardContent';
 import { sendRequest } from '../helpers/sendRequest';
 
 const todayCardsContainer = document.querySelector('.today-cards') as HTMLDivElement;
@@ -16,9 +16,8 @@ const loadTodayCards = () => {
     .then(data => {
       const todayCards: [string] = data.cards;
       todayCards.forEach(card => {
-        const newNode = createNode('p', 'today-card');
-        newNode.textContent = card;
-        todayCardsContainer.append(newNode);
+        const cardNode = collectCardContent(card);
+        todayCardsContainer.append(cardNode);
       });
     })
     .catch(() => alert('Error! Cards list was not loaded...'));

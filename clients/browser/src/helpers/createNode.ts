@@ -1,7 +1,11 @@
 export const createNode = (tagName: string, className: string,
-  attributesNames?: [string], attributesValues?: [string]) => {
+  textContent?: string, attributesNames?: [string],
+  attributesValues?: [string]): HTMLElement => {
   const node = document.createElement(tagName);
   node.className = className;
+  if (textContent) {
+    node.textContent = textContent;
+  }
   if (attributesNames && attributesValues) {
     attributesNames.forEach((attributeName, index) => {
       node.setAttribute(attributeName, attributesValues[index]);
