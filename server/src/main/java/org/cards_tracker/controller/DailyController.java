@@ -9,6 +9,7 @@ import org.cards_tracker.controller.dto.Card;
 import org.cards_tracker.controller.dto.Cards;
 import org.cards_tracker.controller.dto.ErrorDto;
 import org.cards_tracker.controller.error.EndpointRegistrationException;
+import org.cards_tracker.error.CardAlreadyExistsException;
 import org.cards_tracker.error.IncorrectCardTitleException;
 import org.cards_tracker.error.NotExistingCardException;
 import org.cards_tracker.service.CardService;
@@ -46,6 +47,51 @@ public class DailyController {
             }));
         } catch (Exception e) {
             throw new EndpointRegistrationException(path, HttpMethod.GET, e);
+        }
+    }
+
+    public static void registerReshuffleCardsEndpoint(@NotNull final Javalin app,
+                                                      @NotNull final ObjectMapper objectMapper,
+                                                      @NotNull final CardService cardService)
+            throws EndpointRegistrationException {
+        final OpenApiDocumentation apiDocumentation = OpenApiBuilder
+                .document()
+                .operation(operation -> {
+                    operation.description("Update today cards order.");
+                })
+                .result(String.valueOf(HttpCode.BAD_REQUEST.getStatus()), ErrorDto.class)
+                .result(String.valueOf(HttpCode.INTERNAL_SERVER_ERROR.getStatus()), ErrorDto.class)
+                .result(String.valueOf(HttpCode.OK.getStatus()), Cards.class);
+        final String path = "/today/cards";
+        try {
+            app.put(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
+                final Cards orderedCards;
+                try {
+                    orderedCards = ctx.bodyAsClass(Cards.class);
+                } catch (Exception e) {
+                    ctx
+                            .status(HttpCode.BAD_REQUEST)
+                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
+                    return;
+                }
+                try {
+                    cardService.reshuffleTodayCards(orderedCards.getCards());
+                } catch (CardAlreadyExistsException | NotExistingCardException e) {
+                    ctx
+                            .status(HttpCode.BAD_REQUEST)
+                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
+                    return;
+                }
+                catch (Exception e) {
+                    ctx
+                            .status(HttpCode.INTERNAL_SERVER_ERROR)
+                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
+                    return;
+                }
+                ctx.status(HttpCode.OK);
+            }));
+        } catch (Exception e) {
+            throw new EndpointRegistrationException(path, HttpMethod.PUT, e);
         }
     }
 

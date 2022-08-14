@@ -137,5 +137,10 @@ public class Main {
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
+        try {
+            DailyController.registerReshuffleCardsEndpoint(app, objectMapper, cardService);
+        } catch (EndpointRegistrationException e) {
+            log.warn(e.getMessage());
+        }
     }
 }
