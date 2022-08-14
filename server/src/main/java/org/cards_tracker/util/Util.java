@@ -35,7 +35,8 @@ public class Util {
             return Optional.of(item);
         }
         for (Map.Entry<String, Integer> item : itemOccurrences.entrySet()) {
-            if (item.getValue() % 2 != 0) {
+            boolean existsInBothLists = item.getValue() % 2 == 0;
+            if (!existsInBothLists) {
                 return Optional.of(item.getKey());
             }
         }
