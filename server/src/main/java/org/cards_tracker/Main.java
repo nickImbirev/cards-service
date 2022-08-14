@@ -37,7 +37,7 @@ public class Main {
                 maxCardsForToday = MAX_CARDS_FOR_TODAY_DEFAULT;
             } else {
                 maxCardsForToday = Integer.parseInt(args[cardsArgIndex]);
-                if (maxCardsForToday <= 0) {
+                if (maxCardsForToday <= 0 || maxCardsForToday > 100) {
                     log.warn(
                             "Incorrect cards number argument was provided, default value: "
                                     + MAX_CARDS_FOR_TODAY_DEFAULT + " will be used."
