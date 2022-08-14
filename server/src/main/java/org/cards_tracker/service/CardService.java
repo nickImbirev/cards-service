@@ -14,6 +14,8 @@ public interface CardService {
     @NotNull
     List<String> getCardsForToday();
 
+    void reshuffleTodayCards(@NotNull final List<String> todayCards) throws NotExistingCardException, CardAlreadyExistsException;
+
     void completeCardForToday(final @NotNull String title) throws IncorrectCardTitleException, NotExistingCardException;
 
     void removeCard(final @NotNull String title) throws IncorrectCardTitleException;

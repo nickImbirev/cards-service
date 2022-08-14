@@ -12,6 +12,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.cards_tracker.domain.CardPriority.*;
+import static org.cards_tracker.util.Util.findFirstDistinct;
+import static org.cards_tracker.util.Util.findFirstDuplicate;
 
 @SuppressWarnings("unused")
 public class ScheduledInMemoryCardService implements CardService {
@@ -84,6 +86,19 @@ public class ScheduledInMemoryCardService implements CardService {
     @NotNull
     public List<String> getCardsForToday() {
         return new ArrayList<>(cardsForToday);
+    }
+
+    @Override
+    public void reshuffleTodayCards(@NotNull final List<String> orderedCards) throws NotExistingCardException, CardAlreadyExistsException {
+        final Optional<String> duplicate = findFirstDuplicate(orderedCards);
+        if (duplicate.isPresent()) {
+            throw new CardAlreadyExistsException(duplicate.get());
+        }
+        final Optional<String> distinct = findFirstDistinct(cardsForToday, orderedCards);
+        if (distinct.isPresent()) {
+            throw new NotExistingCardException(distinct.get());
+        }
+        this.cardsForToday = orderedCards;
     }
 
     @Override
