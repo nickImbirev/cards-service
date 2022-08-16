@@ -1,4 +1,4 @@
-export const sendRequest = (url: string, method?: string, body?: object) => {
+export const sendRequest = (url: string, method?: string, body?: object): Promise<Response> => {
   if ( !(method && body) ) {
     return fetch(url);
   }
