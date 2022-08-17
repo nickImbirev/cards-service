@@ -1,6 +1,6 @@
 import { createNode } from './createNode';
 
-export const collectCardContent = (title: string, description = ''): HTMLElement => {
+export const collectCardContent = (title: string, description = 'Not filled...'): HTMLElement => {
   const cardContainer: HTMLElement = createNode('div', 'today-card');
   const cardButtonsContainer: HTMLElement = createNode('div', 'today-card__buttons');
   const cardButtons: Array<HTMLElement> = [
