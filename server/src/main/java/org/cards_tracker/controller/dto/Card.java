@@ -25,4 +25,11 @@ public class Card {
     public String getTitle() {
         return title;
     }
+
+    @Override
+    public String toString() {
+        return "Card{" +
+                "title='" + title + '\'' +
+                '}';
+    }
 }
