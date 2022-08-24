@@ -124,15 +124,21 @@ public class ScheduledInMemoryCardService implements CardService {
 
     @Override
     public void reshuffleTodayCards(@NotNull final List<String> orderedCards) throws NotExistingCardException, CardAlreadyExistsException {
+        log.debug("Attempt to reshuffle today cards with a new order: " + String.join(", ", orderedCards) +  " has started.");
         final Optional<String> duplicate = findFirstDuplicate(orderedCards);
         if (duplicate.isPresent()) {
-            throw new CardAlreadyExistsException(duplicate.get());
+            final String cardTitle = duplicate.get();
+            log.debug("Card with title: " + cardTitle + " is duplicated.");
+            throw new CardAlreadyExistsException(cardTitle);
         }
         final Optional<String> distinct = findFirstDistinct(cardsForToday, orderedCards);
         if (distinct.isPresent()) {
-            throw new NotExistingCardException(distinct.get());
+            final String cardTitle = distinct.get();
+            log.debug("Card with a title: " + cardTitle + " does not exist.");
+            throw new NotExistingCardException(cardTitle);
         }
         this.cardsForToday = orderedCards;
+        log.info("Today cards has been reshuffled with a new order: " + String.join(", ", cardsForToday) + ".");
     }
 
     @Override

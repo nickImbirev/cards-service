@@ -73,30 +73,30 @@ public class DailyController {
         final String path = "/today/cards";
         try {
             app.put(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
+                log.debug("Reshuffle today cards request has been triggered.");
                 final Cards orderedCards;
                 try {
                     orderedCards = ctx.bodyAsClass(Cards.class);
                 } catch (Exception e) {
+                    log.debug("Reshuffle today cards request body was incorrect because of: " + e.getMessage());
                     ctx
                             .status(HttpCode.BAD_REQUEST)
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
                     return;
                 }
+                log.debug("Reshuffle today cards request body: " + orderedCards + ".");
                 try {
                     cardService.reshuffleTodayCards(orderedCards.getCards());
                 } catch (CardAlreadyExistsException | NotExistingCardException e) {
+                    log.debug("Reshuffling of today cards was not completed because of: " + e.getMessage() + ".");
                     ctx
                             .status(HttpCode.BAD_REQUEST)
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
                     return;
                 }
-                catch (Exception e) {
-                    ctx
-                            .status(HttpCode.INTERNAL_SERVER_ERROR)
-                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
-                    return;
-                }
+                log.debug("Reshuffling of today cards was completed.");
                 ctx.status(HttpCode.OK);
+                log.info("Reshuffle today cards request was successful.");
             }));
         } catch (Exception e) {
             throw new EndpointRegistrationException(path, HttpMethod.PUT, e);
