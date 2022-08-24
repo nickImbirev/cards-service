@@ -121,12 +121,23 @@ public class ScheduledInMemoryCardService implements CardService {
     }
 
     @Override
-    public void completeCardForToday(@NotNull final String title) throws IncorrectCardTitleException, NotExistingCardException {
-        log.debug("Attempt to complete today card with title: " + title + " started.");
-        if (isTitleInvalid(title)) {
-            log.debug("Card title: " + title + " is incorrect.");
-            throw new IncorrectCardTitleException(title);
+    public void addAdditionalCardForToday(@NotNull final String title) throws NotExistingCardException {
+        log.debug("Attempt to add an additional card with title: " + title + " for today started.");
+        if (allCards.get(title) == null) {
+            log.debug("Card with a title: " + title + " does not exist.");
+            throw new NotExistingCardException(title);
         }
+        if (cardsForToday.stream().noneMatch(card -> card.equals(title))) {
+            cardsForToday.add(title);
+            log.info("Card with title: " + title + " was added for today.");
+        } else {
+            log.debug("Card with title: " + title + " already exists in the today cards list.");
+        }
+    }
+
+    @Override
+    public void completeCardForToday(@NotNull final String title) throws NotExistingCardException {
+        log.debug("Attempt to complete today card with title: " + title + " started.");
         if (!cardsForToday.removeIf((dayCardTitle) -> dayCardTitle.equals(title))) {
             log.debug("Card with a title: " + title + " does not exist in the today cards list.");
             throw new NotExistingCardException(title);
@@ -138,15 +149,11 @@ public class ScheduledInMemoryCardService implements CardService {
     }
 
     @Override
-    public void removeCard(@NotNull final String title) throws IncorrectCardTitleException {
+    public void removeCard(@NotNull final String title) {
         log.debug("Attempt to remove card with title: " + title + " started.");
         if (allCards.get(title) == null) {
             log.debug("Card with title: " + title + " was not found and does need to be removed.");
             return;
-        }
-        if (isTitleInvalid(title)) {
-            log.debug("Card title: " + title + " is incorrect.");
-            throw new IncorrectCardTitleException(title);
         }
         if (cardsForToday.removeIf((dayCardTitle) -> dayCardTitle.equals(title))) {
             log.debug("Card with title: " + title + " was removed from the today's card list.");

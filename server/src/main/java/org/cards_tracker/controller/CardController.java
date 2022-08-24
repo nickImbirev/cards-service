@@ -50,7 +50,7 @@ public class CardController {
                 try {
                     cardService.createCard(cardTitle);
                 } catch (IncorrectCardTitleException | CardAlreadyExistsException e) {
-                    log.debug("Card: + " + cardTitle + " was not created because of: " + e.getMessage() + ".");
+                    log.debug("Card: " + cardTitle + " was not created because of: " + e.getMessage() + ".");
                     ctx
                             .status(HttpCode.BAD_REQUEST)
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
@@ -91,17 +91,8 @@ public class CardController {
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
                     return;
                 }
-                log.debug("Delete card request body: " + cardToCreate + ".");
-                final String cardTitle = cardToCreate.getTitle();
-                try {
-                    cardService.removeCard(cardTitle);
-                } catch (IncorrectCardTitleException e) {
-                    log.debug("Card: + " + cardTitle + " was not deleted because of: " + e.getMessage() + ".");
-                    ctx
-                            .status(HttpCode.BAD_REQUEST)
-                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
-                    return;
-                }
+                String cardTitle = cardToCreate.getTitle();
+                cardService.removeCard(cardTitle);
                 log.debug("Card: " + cardTitle + " was deleted.");
                 ctx.status(HttpCode.NO_CONTENT);
                 log.info("Delete card request for card: " + cardTitle + " was successful.");

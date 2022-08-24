@@ -14,7 +14,9 @@ public interface CardService {
     @NotNull
     List<String> getCardsForToday();
 
-    void completeCardForToday(final @NotNull String title) throws IncorrectCardTitleException, NotExistingCardException;
+    void addAdditionalCardForToday(@NotNull final String title) throws NotExistingCardException;
 
-    void removeCard(final @NotNull String title) throws IncorrectCardTitleException;
+    void completeCardForToday(final @NotNull String title) throws NotExistingCardException;
+
+    void removeCard(final @NotNull String title);
 }

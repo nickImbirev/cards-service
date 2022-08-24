@@ -9,7 +9,6 @@ import org.cards_tracker.controller.dto.Card;
 import org.cards_tracker.controller.dto.Cards;
 import org.cards_tracker.controller.dto.ErrorDto;
 import org.cards_tracker.controller.error.EndpointRegistrationException;
-import org.cards_tracker.error.IncorrectCardTitleException;
 import org.cards_tracker.error.NotExistingCardException;
 import org.cards_tracker.service.CardService;
 import org.eclipse.jetty.http.HttpMethod;
@@ -70,10 +69,10 @@ public class DailyController {
                 .body(Card.class)
                 .json(String.valueOf(HttpCode.BAD_REQUEST.getStatus()), ErrorDto.class)
                 .json(String.valueOf(HttpCode.NOT_FOUND.getStatus()), ErrorDto.class)
-                .result(String.valueOf(HttpCode.OK.getStatus()));
+                .result(String.valueOf(HttpCode.NO_CONTENT.getStatus()));
         final String path = "/today/card";
         try {
-            app.put(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
+            app.delete(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
                 log.debug("Complete today card request has been triggered.");
                 final Card cardToCreate;
                 try {
@@ -89,12 +88,6 @@ public class DailyController {
                 final String cardTitle = cardToCreate.getTitle();
                 try {
                     cardService.completeCardForToday(cardTitle);
-                } catch (IncorrectCardTitleException e) {
-                    log.debug("Today card: " + cardTitle + " was not completed because of: " + e.getMessage() + ".");
-                    ctx
-                            .status(HttpCode.BAD_REQUEST)
-                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
-                    return;
                 } catch (NotExistingCardException e) {
                     log.debug("Today card: " + cardTitle + " was not completed because of: " + e.getMessage() + ".");
                     ctx
@@ -103,11 +96,58 @@ public class DailyController {
                     return;
                 }
                 log.debug("Today card: " + cardTitle + " was completed.");
-                ctx.status(HttpCode.OK);
+                ctx.status(HttpCode.NO_CONTENT);
                 log.info("Complete today card request for card: " + cardTitle + " was successful.");
             }));
         } catch (Exception e) {
-            throw new EndpointRegistrationException(path, HttpMethod.PUT, e);
+            throw new EndpointRegistrationException(path, HttpMethod.DELETE, e);
+        }
+    }
+
+    public static void registerAddAdditionalCardEndpoint(@NotNull final Javalin app,
+                                                         @NotNull final ObjectMapper objectMapper,
+                                                         @NotNull final CardService cardService)
+            throws EndpointRegistrationException {
+        final OpenApiDocumentation apiDocumentation = OpenApiBuilder
+                .document()
+                .operation(operation -> {
+                    operation.description("Add an additional card for today.");
+                })
+                .body(Card.class)
+                .json(String.valueOf(HttpCode.BAD_REQUEST.getStatus()), ErrorDto.class)
+                .json(String.valueOf(HttpCode.NOT_FOUND.getStatus()), ErrorDto.class)
+                .result(String.valueOf(HttpCode.CREATED.getStatus()));
+        final String path = "/today/card";
+        try {
+            app.post(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
+                log.debug("Add additional card for today request has been triggered.");
+                final Card cardToAdd;
+                try {
+                    cardToAdd = ctx.bodyAsClass(Card.class);
+                } catch (Exception e) {
+                    log.debug("Add additional card for today request body was incorrect because of: " + e.getMessage());
+                    ctx
+                            .status(HttpCode.BAD_REQUEST)
+                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
+                    return;
+                }
+                log.debug("Add additional card for today request body: " + cardToAdd + ".");
+                final String cardTitle = cardToAdd.getTitle();
+                try {
+                    cardService.addAdditionalCardForToday(cardTitle);
+                } catch (NotExistingCardException e) {
+                    log.debug("An additional card: " + cardTitle + " was not added for today because of: " + e.getMessage() + ".");
+                    ctx
+                            .status(HttpCode.NOT_FOUND)
+                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
+                    return;
+                }
+                log.debug("An additional card: " + cardTitle + " was added for today.");
+                ctx.status(HttpCode.CREATED);
+                log.info("Add additional card for today request for card: " + cardTitle + " was successful.");
+            }));
+        } catch (Exception e) {
+            throw new EndpointRegistrationException(path, HttpMethod.POST, e);
         }
     }
 }

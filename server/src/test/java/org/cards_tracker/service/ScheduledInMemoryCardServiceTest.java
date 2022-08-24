@@ -1,9 +1,9 @@
 package org.cards_tracker.service;
 
-import org.cards_tracker.error.IncorrectCardTitleException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -57,6 +57,44 @@ public class ScheduledInMemoryCardServiceTest {
     }
 
     @Test
+    public void shouldAddAdditionalCardForTheIteration() {
+        // arrange
+        final List<String> createdCards = List.of("test", "test2", "test3", "test4");
+        int dayLimit = createdCards.size() - 2;
+        cardService = new ScheduledInMemoryCardService(
+                TimeUnit.SECONDS, 10L,
+                dayLimit
+        );
+        createdCards.forEach(cardTitle -> {
+            try {
+                cardService.createCard(cardTitle);
+            } catch (Exception e) {
+                Assert.fail(e.getMessage());
+            }
+        });
+        cardService.updateTodayCards();
+        final List<String> todayCardsBefore = cardService.getCardsForToday();
+        // act
+        final String additionalCard = createdCards.stream()
+                .filter(card -> !todayCardsBefore.contains(card))
+                .findAny()
+                .get();
+        try {
+            cardService.addAdditionalCardForToday(additionalCard);
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+        // assert
+        final List<String> actualCardsForToday = cardService.getCardsForToday();
+        final List<String> expectedCardsForToday = new ArrayList<>(todayCardsBefore);
+        expectedCardsForToday.add(additionalCard);
+        Assert.assertEquals(expectedCardsForToday.size(), actualCardsForToday.size());
+        expectedCardsForToday.forEach(card ->
+                Assert.assertTrue(actualCardsForToday.stream().anyMatch(actualCard -> actualCard.equals(card)))
+        );
+    }
+
+    @Test
     public void shouldRemoveCardCompletely() {
         // arrange
         final String cardToRemove = "test";
@@ -75,11 +113,7 @@ public class ScheduledInMemoryCardServiceTest {
         cardService.updateTodayCards();
         final List<String> cardsBeforeDelete = cardService.getCardsForToday();
         // act
-        try {
-            cardService.removeCard(cardToRemove);
-        } catch (IncorrectCardTitleException e) {
-            Assert.fail(e.getMessage());
-        }
+        cardService.removeCard(cardToRemove);
         // assert
         final List<String> cardsAfterDelete = cardService.getCardsForToday();
         Assert.assertEquals(cardsBeforeDelete.size() - 1 , cardsAfterDelete.size());
