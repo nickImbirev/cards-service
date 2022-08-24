@@ -11,6 +11,7 @@ import org.cards_tracker.controller.DailyController;
 import org.cards_tracker.controller.error.EndpointRegistrationException;
 import org.cards_tracker.service.CardService;
 import org.cards_tracker.service.ScheduledInMemoryCardService;
+import org.eclipse.jetty.util.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,7 +117,9 @@ public class Main {
                     ));
             config.enableCorsForAllOrigins();
             if (log.isDebugEnabled()) {
-                config.enableDevLogging();
+                // disable the server logs until necessary
+                Log.setLog(new NoLogging());
+//                config.enableDevLogging();
             }
         }).start(8081);
 
@@ -154,4 +157,27 @@ public class Main {
             log.warn(e.getMessage());
         }
     }
+}
+
+class NoLogging implements org.eclipse.jetty.util.log.Logger {
+    @Override public String getName() { return "no"; }
+    @Override public void warn(String msg, Object... args) { }
+    @Override public void warn(Throwable thrown) { }
+    @Override public void warn(String msg, Throwable thrown) { }
+    @Override public void info(String msg, Object... args) { }
+    @Override public void info(Throwable thrown) { }
+    @Override public void info(String msg, Throwable thrown) { }
+    @Override public boolean isDebugEnabled() { return false; }
+    @Override public void setDebugEnabled(boolean enabled) { }
+    @Override public void debug(String msg, Object... args) { }
+
+    @Override
+    public void debug(String msg, long value) {
+
+    }
+
+    @Override public void debug(Throwable thrown) { }
+    @Override public void debug(String msg, Throwable thrown) { }
+    @Override public org.eclipse.jetty.util.log.Logger getLogger(String name) { return this; }
+    @Override public void ignore(Throwable ignored) { }
 }

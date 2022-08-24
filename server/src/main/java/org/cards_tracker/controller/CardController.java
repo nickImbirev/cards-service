@@ -50,7 +50,7 @@ public class CardController {
                 try {
                     cardService.createCard(cardTitle);
                 } catch (IncorrectCardTitleException | CardAlreadyExistsException e) {
-                    log.debug("Card: + " + cardTitle + " was not created because of: " + e.getMessage() + ".");
+                    log.debug("Card: " + cardTitle + " was not created because of: " + e.getMessage() + ".");
                     ctx
                             .status(HttpCode.BAD_REQUEST)
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
