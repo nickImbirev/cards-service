@@ -67,9 +67,10 @@ public class DailyController {
                 .operation(operation -> {
                     operation.description("Update today cards order.");
                 })
+                .body(Cards.class)
                 .result(String.valueOf(HttpCode.BAD_REQUEST.getStatus()), ErrorDto.class)
                 .result(String.valueOf(HttpCode.INTERNAL_SERVER_ERROR.getStatus()), ErrorDto.class)
-                .result(String.valueOf(HttpCode.OK.getStatus()), Cards.class);
+                .result(String.valueOf(HttpCode.OK.getStatus()));
         final String path = "/today/cards";
         try {
             app.put(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
