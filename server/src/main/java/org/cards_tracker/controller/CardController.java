@@ -13,8 +13,13 @@ import org.cards_tracker.error.IncorrectCardTitleException;
 import org.cards_tracker.service.CardService;
 import org.eclipse.jetty.http.HttpMethod;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CardController {
+
+    private static final Logger log = LoggerFactory.getLogger(CardController.class);
+
     public static void registerCreateCardEndpoint(@NotNull final Javalin app,
                                                   @NotNull final ObjectMapper objectMapper,
                                                   @NotNull final CardService cardService) throws EndpointRegistrationException {
@@ -29,24 +34,31 @@ public class CardController {
         final String path = "/card";
         try {
             app.post(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
+                log.debug("Create card request has been triggered.");
                 final Card cardToCreate;
                 try {
                     cardToCreate = ctx.bodyAsClass(Card.class);
                 } catch (Exception e) {
+                    log.debug("Create card request body was incorrect because of: " + e.getMessage());
                     ctx
                             .status(HttpCode.BAD_REQUEST)
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
                     return;
                 }
+                log.debug("Create card request body: " + cardToCreate + ".");
+                String cardTitle = cardToCreate.getTitle();
                 try {
-                    cardService.createCard(cardToCreate.getTitle());
+                    cardService.createCard(cardTitle);
                 } catch (IncorrectCardTitleException | CardAlreadyExistsException e) {
+                    log.debug("Card: + " + cardTitle + " was not created because of: " + e.getMessage() + ".");
                     ctx
                             .status(HttpCode.BAD_REQUEST)
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
                     return;
                 }
+                log.debug("Card: " + cardTitle + " was created.");
                 ctx.status(HttpCode.CREATED);
+                log.info("Create card request for card: " + cardTitle + " was successful.");
             }));
         } catch (Exception e) {
             throw new EndpointRegistrationException(path, HttpMethod.POST, e);
@@ -68,10 +80,12 @@ public class CardController {
         final String path = "/card";
         try {
             app.delete(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
+                log.debug("Delete card request has been triggered.");
                 final Card cardToCreate;
                 try {
                     cardToCreate = ctx.bodyAsClass(Card.class);
                 } catch (Exception e) {
+                    log.debug("Delete card request body was incorrect because of: " + e.getMessage() + ".");
                     ctx
                             .status(HttpCode.BAD_REQUEST)
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
@@ -79,6 +93,7 @@ public class CardController {
                 }
                 cardService.removeCard(cardToCreate.getTitle());
                 ctx.status(HttpCode.NO_CONTENT);
+                log.info("Delete card request for card: " + cardToCreate.getTitle() + " was successful.");
             }));
         } catch (Exception e) {
             throw new EndpointRegistrationException(path, HttpMethod.DELETE, e);

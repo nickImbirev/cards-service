@@ -30,7 +30,7 @@ public class Main {
         try {
             int cardsArgIndex = 0;
             if (args.length <= cardsArgIndex || args[cardsArgIndex] == null) {
-                log.warn(
+                log.debug(
                         "Cards number argument was not provided, default value: "
                                 + MAX_CARDS_FOR_TODAY_DEFAULT + " will be used."
                 );
@@ -43,6 +43,8 @@ public class Main {
                                     + MAX_CARDS_FOR_TODAY_DEFAULT + " will be used."
                     );
                     maxCardsForToday = MAX_CARDS_FOR_TODAY_DEFAULT;
+                } else {
+                    log.debug("Cards number argument value is: " + maxCardsForToday);
                 }
             }
         } catch (Exception e) {
@@ -57,7 +59,7 @@ public class Main {
         try {
             int periodArgIndex = 1;
             if (args.length <= periodArgIndex || args[periodArgIndex] == null) {
-                log.warn(
+                log.debug(
                         "Period argument was not provided, default value: "
                                 + PERIOD_DEFAULT + " will be used."
                 );
@@ -70,6 +72,8 @@ public class Main {
                                     + PERIOD_DEFAULT + " will be used."
                     );
                     period = PERIOD_DEFAULT;
+                } else {
+                    log.debug("Period argument value is: " + period);
                 }
             }
         } catch (Exception e) {
@@ -85,12 +89,13 @@ public class Main {
             int timeUnitArgIndex = 2;
             if (args.length <= timeUnitArgIndex || args[timeUnitArgIndex] == null) {
                 timeUnit = TIME_UNIT_DEFAULT;
-                log.warn(
+                log.debug(
                         "Time unit argument was not provided, default value: "
                                 + TIME_UNIT_DEFAULT + " will be used."
                 );
             } else {
                 timeUnit = TimeUnit.valueOf(args[timeUnitArgIndex]);
+                log.debug("Time unit argument value is: " + timeUnit);
             }
         } catch (Exception e) {
             log.warn(
@@ -110,7 +115,9 @@ public class Main {
                                     .path("/swagger-docs")
                     ));
             config.enableCorsForAllOrigins();
-            config.enableDevLogging();
+            if (log.isDebugEnabled()) {
+                config.enableDevLogging();
+            }
         }).start(8081);
 
         final ObjectMapper objectMapper = new ObjectMapper();
@@ -119,21 +126,25 @@ public class Main {
 
         try {
             CardController.registerCreateCardEndpoint(app, objectMapper, cardService);
+            log.debug("Create card API has been registered.");
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
         try {
             DailyController.registerCompleteCardEndpoint(app, objectMapper, cardService);
+            log.debug("Complete today card API has been registered.");
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
         try {
             CardController.registerDeleteCardEndpoint(app, objectMapper, cardService);
+            log.debug("Create card API has been registered.");
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
         try {
             DailyController.registerGetCardsEndpoint(app, objectMapper, cardService);
+            log.debug("Get today cards API has been registered.");
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
