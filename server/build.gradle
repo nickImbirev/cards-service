@@ -19,6 +19,7 @@ jar {
 
 application {
     mainClass = 'org.cards_tracker.Main'
+    applicationDefaultJvmArgs = ['-Dorg.slf4j.simpleLogger.defaultLogLevel=info']
 }
 
 repositories {

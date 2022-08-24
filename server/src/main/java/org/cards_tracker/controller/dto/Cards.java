@@ -21,4 +21,11 @@ public class Cards {
     public List<String> getCards() {
         return cards;
     }
+
+    @Override
+    public String toString() {
+        return "Cards{" +
+                "cards=" + String.join(", " + cards) +
+                "}";
+    }
 }
