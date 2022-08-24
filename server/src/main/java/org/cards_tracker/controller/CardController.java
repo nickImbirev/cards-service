@@ -91,9 +91,11 @@ public class CardController {
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
                     return;
                 }
-                cardService.removeCard(cardToCreate.getTitle());
+                String cardTitle = cardToCreate.getTitle();
+                cardService.removeCard(cardTitle);
+                log.debug("Card: " + cardTitle + " was deleted.");
                 ctx.status(HttpCode.NO_CONTENT);
-                log.info("Delete card request for card: " + cardToCreate.getTitle() + " was successful.");
+                log.info("Delete card request for card: " + cardTitle + " was successful.");
             }));
         } catch (Exception e) {
             throw new EndpointRegistrationException(path, HttpMethod.DELETE, e);
