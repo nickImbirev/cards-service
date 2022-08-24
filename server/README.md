@@ -32,6 +32,8 @@ also you can try them out on the running server._
 
 ### How to configure service
 
+_Note: All the service configuration is available only during the service startup and cannot be changed without a restart._
+
 In order to configure the service you can use the standard run command with an additional 'args' argument:
 `gradle run --args=''`, where the configuration arguments can be provided with a space (` `) symbol as a delimiter.
 
@@ -44,3 +46,15 @@ There is a possibility to configure the following service values:
   - the time unit can be any value from the range: (DAYS, HOURS, MINUTES, SECONDS, MILLISECONDS) (third argument in the list)
 
 Example: `gradle run --args='5 3 MINUTES'` (maximum number cards per day - 5, sync schedule: every 3 minutes).
+
+#### How to configure the service logging
+
+_Note: There are [multiple](https://sematext.com/blog/logging-levels/) logging levels available._
+
+_Note: The service logging values can only be configured in the [build.gradle application section](./build.gradle) only right now._
+
+There is a possibility to configure the following service logging values:
+
+- logging level: 
+  - can be error, warn, info (default), debug with an argument: ``-Dorg.slf4j.simpleLogger.defaultLogLevel=YOUR_LEVEL``.
+

@@ -11,6 +11,7 @@ import org.cards_tracker.controller.DailyController;
 import org.cards_tracker.controller.error.EndpointRegistrationException;
 import org.cards_tracker.service.CardService;
 import org.cards_tracker.service.ScheduledInMemoryCardService;
+import org.eclipse.jetty.util.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +31,7 @@ public class Main {
         try {
             int cardsArgIndex = 0;
             if (args.length <= cardsArgIndex || args[cardsArgIndex] == null) {
-                log.warn(
+                log.debug(
                         "Cards number argument was not provided, default value: "
                                 + MAX_CARDS_FOR_TODAY_DEFAULT + " will be used."
                 );
@@ -43,6 +44,8 @@ public class Main {
                                     + MAX_CARDS_FOR_TODAY_DEFAULT + " will be used."
                     );
                     maxCardsForToday = MAX_CARDS_FOR_TODAY_DEFAULT;
+                } else {
+                    log.debug("Cards number argument value is: " + maxCardsForToday);
                 }
             }
         } catch (Exception e) {
@@ -57,7 +60,7 @@ public class Main {
         try {
             int periodArgIndex = 1;
             if (args.length <= periodArgIndex || args[periodArgIndex] == null) {
-                log.warn(
+                log.debug(
                         "Period argument was not provided, default value: "
                                 + PERIOD_DEFAULT + " will be used."
                 );
@@ -70,6 +73,8 @@ public class Main {
                                     + PERIOD_DEFAULT + " will be used."
                     );
                     period = PERIOD_DEFAULT;
+                } else {
+                    log.debug("Period argument value is: " + period);
                 }
             }
         } catch (Exception e) {
@@ -85,12 +90,13 @@ public class Main {
             int timeUnitArgIndex = 2;
             if (args.length <= timeUnitArgIndex || args[timeUnitArgIndex] == null) {
                 timeUnit = TIME_UNIT_DEFAULT;
-                log.warn(
+                log.debug(
                         "Time unit argument was not provided, default value: "
                                 + TIME_UNIT_DEFAULT + " will be used."
                 );
             } else {
                 timeUnit = TimeUnit.valueOf(args[timeUnitArgIndex]);
+                log.debug("Time unit argument value is: " + timeUnit);
             }
         } catch (Exception e) {
             log.warn(
@@ -110,7 +116,11 @@ public class Main {
                                     .path("/swagger-docs")
                     ));
             config.enableCorsForAllOrigins();
-            config.enableDevLogging();
+            if (log.isDebugEnabled()) {
+                // disable the server logs until necessary
+                Log.setLog(new NoLogging());
+//                config.enableDevLogging();
+            }
         }).start(8081);
 
         final ObjectMapper objectMapper = new ObjectMapper();
@@ -119,21 +129,30 @@ public class Main {
 
         try {
             CardController.registerCreateCardEndpoint(app, objectMapper, cardService);
+            log.debug("Create card API has been registered.");
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
         try {
             DailyController.registerCompleteCardEndpoint(app, objectMapper, cardService);
+            log.debug("Complete today card API has been registered.");
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
         try {
             CardController.registerDeleteCardEndpoint(app, objectMapper, cardService);
+            log.debug("Create card API has been registered.");
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
         try {
             DailyController.registerGetCardsEndpoint(app, objectMapper, cardService);
+            log.debug("Get today cards API has been registered.");
+        } catch (EndpointRegistrationException e) {
+            log.warn(e.getMessage());
+        }
+        try {
+            DailyController.registerAddAdditionalCardEndpoint(app, objectMapper, cardService);
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
@@ -143,4 +162,27 @@ public class Main {
             log.warn(e.getMessage());
         }
     }
+}
+
+class NoLogging implements org.eclipse.jetty.util.log.Logger {
+    @Override public String getName() { return "no"; }
+    @Override public void warn(String msg, Object... args) { }
+    @Override public void warn(Throwable thrown) { }
+    @Override public void warn(String msg, Throwable thrown) { }
+    @Override public void info(String msg, Object... args) { }
+    @Override public void info(Throwable thrown) { }
+    @Override public void info(String msg, Throwable thrown) { }
+    @Override public boolean isDebugEnabled() { return false; }
+    @Override public void setDebugEnabled(boolean enabled) { }
+    @Override public void debug(String msg, Object... args) { }
+
+    @Override
+    public void debug(String msg, long value) {
+
+    }
+
+    @Override public void debug(Throwable thrown) { }
+    @Override public void debug(String msg, Throwable thrown) { }
+    @Override public org.eclipse.jetty.util.log.Logger getLogger(String name) { return this; }
+    @Override public void ignore(Throwable ignored) { }
 }
