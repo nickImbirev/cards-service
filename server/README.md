@@ -40,7 +40,7 @@ In order to configure the service you can use the standard run command with an a
 There is a possibility to configure the following service values:
 
 - maximum number of cards available for one day (first argument in the list)
-  - can be any integer starts from 1
+  - can be any integer starts from 1 to 100
 - day cards preparation schedule
   - the schedule period can be any integer starts from 1 (second argument in the list)
   - the time unit can be any value from the range: (DAYS, HOURS, MINUTES, SECONDS, MILLISECONDS) (third argument in the list)

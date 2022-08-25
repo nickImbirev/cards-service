@@ -9,6 +9,7 @@ import org.cards_tracker.controller.dto.Card;
 import org.cards_tracker.controller.dto.Cards;
 import org.cards_tracker.controller.dto.ErrorDto;
 import org.cards_tracker.controller.error.EndpointRegistrationException;
+import org.cards_tracker.error.CardAlreadyExistsException;
 import org.cards_tracker.error.NotExistingCardException;
 import org.cards_tracker.service.CardService;
 import org.eclipse.jetty.http.HttpMethod;
@@ -54,6 +55,52 @@ public class DailyController {
             }));
         } catch (Exception e) {
             throw new EndpointRegistrationException(path, HttpMethod.GET, e);
+        }
+    }
+
+    public static void registerReshuffleCardsEndpoint(@NotNull final Javalin app,
+                                                      @NotNull final ObjectMapper objectMapper,
+                                                      @NotNull final CardService cardService)
+            throws EndpointRegistrationException {
+        final OpenApiDocumentation apiDocumentation = OpenApiBuilder
+                .document()
+                .operation(operation -> {
+                    operation.description("Update today cards order.");
+                })
+                .body(Cards.class)
+                .result(String.valueOf(HttpCode.BAD_REQUEST.getStatus()), ErrorDto.class)
+                .result(String.valueOf(HttpCode.INTERNAL_SERVER_ERROR.getStatus()), ErrorDto.class)
+                .result(String.valueOf(HttpCode.OK.getStatus()));
+        final String path = "/today/cards";
+        try {
+            app.put(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
+                log.debug("Reshuffle today cards request has been triggered.");
+                final Cards orderedCards;
+                try {
+                    orderedCards = ctx.bodyAsClass(Cards.class);
+                } catch (Exception e) {
+                    log.debug("Reshuffle today cards request body was incorrect because of: " + e.getMessage());
+                    ctx
+                            .status(HttpCode.BAD_REQUEST)
+                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
+                    return;
+                }
+                log.debug("Reshuffle today cards request body: " + orderedCards + ".");
+                try {
+                    cardService.reshuffleTodayCards(orderedCards.getCards());
+                } catch (CardAlreadyExistsException | NotExistingCardException e) {
+                    log.debug("Reshuffling of today cards was not completed because of: " + e.getMessage() + ".");
+                    ctx
+                            .status(HttpCode.BAD_REQUEST)
+                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
+                    return;
+                }
+                log.debug("Reshuffling of today cards was completed.");
+                ctx.status(HttpCode.OK);
+                log.info("Reshuffle today cards request was successful.");
+            }));
+        } catch (Exception e) {
+            throw new EndpointRegistrationException(path, HttpMethod.PUT, e);
         }
     }
 

@@ -14,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.cards_tracker.domain.CardPriority.*;
+import static org.cards_tracker.util.Util.findFirstDistinct;
+import static org.cards_tracker.util.Util.findFirstDuplicate;
 
 @SuppressWarnings("unused")
 public class ScheduledInMemoryCardService implements CardService {
@@ -118,6 +120,25 @@ public class ScheduledInMemoryCardService implements CardService {
     @NotNull
     public List<String> getCardsForToday() {
         return new ArrayList<>(cardsForToday);
+    }
+
+    @Override
+    public void reshuffleTodayCards(@NotNull final List<String> orderedCards) throws NotExistingCardException, CardAlreadyExistsException {
+        log.debug("Attempt to reshuffle today cards with a new order: " + String.join(", ", orderedCards) +  " has started.");
+        final Optional<String> duplicate = findFirstDuplicate(orderedCards);
+        if (duplicate.isPresent()) {
+            final String cardTitle = duplicate.get();
+            log.debug("Card with title: " + cardTitle + " is duplicated.");
+            throw new CardAlreadyExistsException(cardTitle);
+        }
+        final Optional<String> distinct = findFirstDistinct(cardsForToday, orderedCards);
+        if (distinct.isPresent()) {
+            final String cardTitle = distinct.get();
+            log.debug("Card with a title: " + cardTitle + " does not exist.");
+            throw new NotExistingCardException(cardTitle);
+        }
+        this.cardsForToday = orderedCards;
+        log.info("Today cards has been reshuffled with a new order: " + String.join(", ", cardsForToday) + ".");
     }
 
     @Override

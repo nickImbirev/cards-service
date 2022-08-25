@@ -24,8 +24,11 @@ public class Cards {
 
     @Override
     public String toString() {
-        return "Cards{" +
-                "cards=" + String.join(", " + cards) +
-                "}";
+        if (cards.size() != 0) {
+            return "Cards{" +
+                    "cards=" + String.join(", " + cards) +
+                    "}";
+        }
+        return "Cards{ cards=[] }";
     }
 }
