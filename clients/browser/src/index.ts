@@ -1,4 +1,6 @@
 import './sass/style.scss';
 
-import './modules/listeners/todayCardsLoading';
-import './modules/listeners/newCardCreating';
+import { PageComponent } from './modules/components/pageComponent';
+
+const page = new PageComponent();
+page.load();
