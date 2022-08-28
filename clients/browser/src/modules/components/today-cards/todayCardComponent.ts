@@ -1,4 +1,4 @@
-import { createNode } from '../../user-interaction/helpers/createNode';
+import { createNode } from '../../helpers/createNode';
 
 type TodayCard = HTMLElement;
 type TodayCardItems = Array<HTMLElement>;

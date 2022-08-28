@@ -1,4 +1,4 @@
-import { createNode } from '../../user-interaction/helpers/createNode';
+import { createNode } from '../../helpers/createNode';
 import { TodayCardComponent } from './todayCardComponent';
 import { get } from '../../API/get';
 
