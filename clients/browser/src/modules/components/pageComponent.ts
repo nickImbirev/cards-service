@@ -10,9 +10,6 @@ export class PageComponent {
   }
 
   load(): void {
-    window.addEventListener('load', () => {
-      const todayCardsComponent = new TodayCardsComponent();
-      todayCardsComponent.load(this.page);
-    });
+    window.addEventListener('load', () => new TodayCardsComponent(this.page));
   }
 }
