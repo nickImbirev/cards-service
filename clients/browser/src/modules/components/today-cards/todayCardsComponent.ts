@@ -30,17 +30,11 @@ export class TodayCardsComponent {
 
   load(parent: ParentComponent) {
     get()
-      .then(response => {
-        if (response.status === 200) {
-          return response.json();
-        } else {
-          new ErrorMessageComponent(this.errorMessage).render(this.todayCardsContainer);
-        }
-      })
+      .then(response => response.json())
       .then(data => {
         const todayCardsContainer: TodayCardsContainer = this.render(data.cards);
         parent.append(todayCardsContainer);
       })
-      .catch(() => new ErrorMessageComponent(this.errorMessage).render(this.todayCardsContainer));
+      .catch(() => new ErrorMessageComponent(this.errorMessage).render(parent));
   }
 }
