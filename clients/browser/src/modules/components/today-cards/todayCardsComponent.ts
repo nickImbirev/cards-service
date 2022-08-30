@@ -17,6 +17,8 @@ export class TodayCardsComponent {
     this.errorMessage = 'I am sorry, cards for today were not loaded...';
 
     this.load(parent);
+
+    this.todayCardsContainer.addEventListener('click', () => this.update(parent));
   }
 
   render(todayCardsList: TodayCardsList): TodayCardsContainer {
@@ -36,5 +38,12 @@ export class TodayCardsComponent {
         parent.append(todayCardsContainer);
       })
       .catch(() => new ErrorMessageComponent(this.errorMessage).render(parent));
+  }
+
+  update(parent: ParentComponent) {
+    while (this.todayCardsContainer.firstChild) {
+      this.todayCardsContainer.removeChild(this.todayCardsContainer.firstChild);
+    }
+    this.load(parent);
   }
 }
