@@ -1,0 +1,26 @@
+name: Browser Client Workflow
+on:
+  push:
+    branches:
+      - "*"
+    paths:
+      - clients/browser/**
+  pull_request:
+    branches:
+      - "*"
+jobs:
+  build-test-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Build Dev Version
+        run: npm run build:dev
