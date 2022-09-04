@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "start dev server",
+      "group": "build",
+      "isBackground": true,
+      "type": "npm",
+      "script": "start-dev-server",
+      "problemMatcher": [
+        {
+          "owner": "typescript",
+          "source": "ts",
+          "applyTo": "closedDocuments",
+          "fileLocation": "absolute",
+          "severity": "error",
+          "pattern": [
+            {
+              "regexp": "\\[tsl\\] ERROR in (.*)?\\((\\d+),(\\d+)\\)",
+              "file": 1,
+              "line": 2,
+              "column": 3
+            },
+            {
+              "regexp": "\\s*TS\\d+:\\s*(.*)",
+              "message": 1
+            }
+          ],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": {
+              "regexp": "Project is running at:"
+            },
+            "endsPattern": {
+              "regexp": "compiled successfully"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
