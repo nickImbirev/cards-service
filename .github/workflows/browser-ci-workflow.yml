@@ -11,6 +11,9 @@ on:
 jobs:
   build-test-artifact:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./clients/browser
     steps:
       - name: Check out code
         uses: actions/checkout@v2
