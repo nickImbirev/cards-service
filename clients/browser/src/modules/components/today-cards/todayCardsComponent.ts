@@ -1,7 +1,7 @@
 import { createNode } from '../../helpers/createNode';
 import { TodayCardComponent } from './todayCardComponent';
 import { get } from '../../API/get';
-import { ErrorMessageComponent } from '../errorMessageComponent';
+import { renderErrorContainer } from '../errorMessageComponent';
 
 type TodayCardsContainer = HTMLElement;
 type TodayCardsList = Array<string>;
@@ -10,11 +10,8 @@ type ParentComponent = HTMLElement;
 export class TodayCardsComponent {
   todayCardsContainer: TodayCardsContainer;
 
-  errorMessage: string;
-
   constructor(parent: ParentComponent) {
     this.todayCardsContainer = createNode('main', 'today-cards');
-    this.errorMessage = 'I am sorry, cards for today were not loaded...';
 
     this.load(parent);
 
@@ -37,7 +34,10 @@ export class TodayCardsComponent {
         const todayCardsContainer: TodayCardsContainer = this.render(data.cards);
         parent.append(todayCardsContainer);
       })
-      .catch(() => new ErrorMessageComponent(this.errorMessage).render(parent));
+      .catch(() => {
+        const message: string = 'I am sorry, cards for today were not loaded...';
+        parent.append(renderErrorContainer(message));
+      });
   }
 
   update(parent: ParentComponent) {
