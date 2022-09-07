@@ -1,5 +1,5 @@
 import { createNode } from '../../helpers/createNode';
-import { TodayCardComponent } from './todayCardComponent';
+import { renderTodayCard } from './todayCardComponent';
 import { get } from '../../API/get';
 import { renderErrorContainer } from '../errorMessageComponent';
 
@@ -20,8 +20,7 @@ export class TodayCardsComponent {
 
   render(todayCardsList: TodayCardsList): TodayCardsContainer {
     todayCardsList.forEach(todayCardData => {
-      const todayCard = new TodayCardComponent();
-      const renderedTodayCard = todayCard.render(todayCardData);
+      const renderedTodayCard = renderTodayCard(todayCardData);
       this.todayCardsContainer.append(renderedTodayCard);
     });
     return this.todayCardsContainer;
