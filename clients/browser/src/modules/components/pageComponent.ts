@@ -1,8 +1,9 @@
-import { TodayCardsComponent } from './today-cards/todayCardsComponent';
+import { TodayCardsComponent, TodayCardsContainer } from './today-cards/todayCardsComponent';
 
 type Page = HTMLBodyElement;
 
 export const renderPage = (): void => {
-  const page: Page = document.querySelector('body') as HTMLBodyElement;
-  new TodayCardsComponent(page);
+  const page = document.querySelector('body') as Page;
+  const renderedTodayCards: TodayCardsContainer = new TodayCardsComponent().render();
+  page.append(renderedTodayCards);
 };
