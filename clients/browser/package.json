@@ -1,12 +1,11 @@
 {
   "name": "browser",
   "scripts": {
-    "build:dev": "rimraf dist && webpack --config webpack.dev.js",
     "clean": "rimraf node_modules dist",
-    "dev": "webpack serve --env development",
+    "build:dev": "rimraf dist && webpack --config webpack.dev.js",
+    "start-dev-server": "webpack-dev-server --watch-files ./src/**/* --config webpack.dev.js",
     "lint": "concurrently -n \"typescpt,_eslint_,prettier\" \"tsc --noemit \" \"eslint --ext .ts .\" \"prettier --check .\"",
-    "pretty": "prettier --write .",
-    "start-dev-server": "webpack-dev-server --watch-files ./src/**/* --config webpack.dev.js"
+    "pretty": "prettier --write ."
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.32.0",
