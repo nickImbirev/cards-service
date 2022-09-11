@@ -5,16 +5,20 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
 
-const devServer = (isDev) => !isDev ? {} : {
-  devServer: {
-    open: true,
-    port: 8080,
-    hot: true,
-    static: './src',
-  },
-};
+const devServer = (isDev) =>
+  !isDev
+    ? {}
+    : {
+        devServer: {
+          open: true,
+          port: 8080,
+          hot: true,
+          static: './src',
+        },
+      };
 
-const esLintPlugin = (isDev) => isDev ? [] : [ new ESLintPlugin({ extensions: ['ts', 'js'] }) ];
+const esLintPlugin = (isDev) =>
+  isDev ? [] : [new ESLintPlugin({ extensions: ['ts', 'js'] })];
 
 module.exports = ({ development }) => ({
   mode: development ? 'development' : 'production',
@@ -45,8 +49,8 @@ module.exports = ({ development }) => ({
       },
       {
         test: /\.s[ac]ss$/i,
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader']
-      }
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
+      },
     ],
   },
   resolve: {
@@ -63,7 +67,7 @@ module.exports = ({ development }) => ({
     //     { from: './src/assets', to: 'assets' }
     //   ],
     // }),
-    new CleanWebpackPlugin({ cleanStaleWebpackAssets: false })
+    new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
   ],
   ...devServer(development),
 });

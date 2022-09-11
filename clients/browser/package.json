@@ -3,13 +3,17 @@
   "scripts": {
     "build": "webpack",
     "dev": "webpack serve --env development",
-    "lint": "concurrently -n \"typescpt,_eslint_,prettier\" \"tsc --noemit \" \"eslint --ext .ts .\" \"prettier --check .\""
+    "lint": "concurrently -n \"typescpt,_eslint_,prettier\" \"tsc --noemit \" \"eslint --ext .ts .\" \"prettier --check .\"",
+    "pretty": "prettier --write ."
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.32.0",
     "@typescript-eslint/parser": "^5.32.0",
     "css-loader": "^6.7.1",
     "eslint": "^8.21.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-webpack-plugin": "^3.2.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
     "html-webpack-plugin": "^5.5.0",
