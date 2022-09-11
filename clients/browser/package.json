@@ -1,10 +1,12 @@
 {
   "name": "browser",
   "scripts": {
-    "build": "webpack",
+    "build:dev": "rimraf dist && webpack --config webpack.dev.js",
+    "clean": "rimraf node_modules dist",
     "dev": "webpack serve --env development",
     "lint": "concurrently -n \"typescpt,_eslint_,prettier\" \"tsc --noemit \" \"eslint --ext .ts .\" \"prettier --check .\"",
-    "pretty": "prettier --write ."
+    "pretty": "prettier --write .",
+    "start-dev-server": "webpack-dev-server --watch-files ./src/**/* --config webpack.dev.js"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.32.0",
