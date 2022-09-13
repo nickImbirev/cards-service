@@ -1,6 +1,10 @@
-export const createNode = (tagName: string, className: string,
-  textContent?: string, attributesNames?: [string],
-  attributesValues?: [string]): HTMLElement => {
+export const createNode = (
+  tagName: string,
+  className: string,
+  textContent?: string,
+  attributesNames?: [string],
+  attributesValues?: [string]
+): HTMLElement => {
   const node: HTMLElement = document.createElement(tagName);
   node.className = className;
   if (textContent) {

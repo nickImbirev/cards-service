@@ -12,19 +12,24 @@ export class TodayCardsComponent {
   }
 
   render(): TodayCardsContainer {
-    const todayCardsContainer: TodayCardsContainer = createNode('main', 'today-cards');
+    const todayCardsContainer: TodayCardsContainer = createNode(
+      'main',
+      'today-cards'
+    );
 
     const localStorageData = localStorage.getItem('todayCards') as string;
 
     if (localStorageData) {
       const todayCardsList: TodayCardsList = JSON.parse(localStorageData);
 
-      todayCardsList.forEach(todayCardData => {
+      todayCardsList.forEach((todayCardData) => {
         const renderedTodayCard = renderTodayCard(todayCardData);
         todayCardsContainer.append(renderedTodayCard);
       });
     } else {
-      const errorContainer: ErrorContainer = renderErrorContainer('Sorry, cards for today were not loaded...');
+      const errorContainer: ErrorContainer = renderErrorContainer(
+        'Sorry, cards for today were not loaded...'
+      );
       todayCardsContainer.append(errorContainer);
     }
 
