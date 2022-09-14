@@ -12,23 +12,22 @@ export class TodayCardsComponent {
       'main',
       'today-cards'
     );
-    const response = await get();
-    const data = await response.json();
 
-    if (data) {
+    try {
+      const response = await get();
+      const data = await response.json();
       const todayCardsList: TodayCardsList = data.cards;
 
       todayCardsList.forEach((todayCardData) => {
         const renderedTodayCard = renderTodayCard(todayCardData);
         todayCardsContainer.append(renderedTodayCard);
       });
-    } else {
+    } catch (error) {
       const errorContainer: ErrorContainer = renderErrorContainer(
-        'Sorry, cards for today were not loaded...'
+        `Sorry, cards for today were not loaded. ${error}`
       );
       todayCardsContainer.append(errorContainer);
     }
-
     return todayCardsContainer;
   }
 }
