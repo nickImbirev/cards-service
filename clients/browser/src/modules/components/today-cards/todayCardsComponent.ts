@@ -1,26 +1,22 @@
+import { get } from '../../API/get';
 import { createNode } from '../../helpers/createNode';
 import { renderTodayCard } from './todayCardComponent';
-import { saveTodayCardsToLocalStorage } from '../../helpers/saveTodayCardsToLocalStorage';
 import { ErrorContainer, renderErrorContainer } from '../errorMessageComponent';
 
 export type TodayCardsContainer = HTMLElement;
 type TodayCardsList = Array<string>;
 
 export class TodayCardsComponent {
-  constructor() {
-    saveTodayCardsToLocalStorage();
-  }
-
-  render(): TodayCardsContainer {
+  async render(): Promise<TodayCardsContainer> {
     const todayCardsContainer: TodayCardsContainer = createNode(
       'main',
       'today-cards'
     );
+    const response = await get();
+    const data = await response.json();
 
-    const localStorageData = localStorage.getItem('todayCards') as string;
-
-    if (localStorageData) {
-      const todayCardsList: TodayCardsList = JSON.parse(localStorageData);
+    if (data) {
+      const todayCardsList: TodayCardsList = data.cards;
 
       todayCardsList.forEach((todayCardData) => {
         const renderedTodayCard = renderTodayCard(todayCardData);

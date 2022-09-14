@@ -3,11 +3,8 @@ import {
   TodayCardsContainer,
 } from './today-cards/todayCardsComponent';
 
-type Page = HTMLBodyElement;
-
-export const renderPage = (): void => {
-  const page = document.querySelector('body') as Page;
-  const renderedTodayCards: TodayCardsContainer =
+export const renderPage = async (): Promise<void> => {
+  const renderedTodayCards: Promise<TodayCardsContainer> =
     new TodayCardsComponent().render();
-  page.append(renderedTodayCards);
+  document.body.append(await renderedTodayCards);
 };
