@@ -6,7 +6,7 @@ import { ErrorContainer, renderErrorContainer } from '../errorMessageComponent';
 export type TodayCardsContainer = HTMLElement;
 type TodayCardsList = Array<string>;
 type ResponseBody = {
-  cards: [string];
+  cards: TodayCardsList;
 };
 
 export class TodayCardsComponent {
