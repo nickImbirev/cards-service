@@ -24,7 +24,7 @@ export class TodayCardsComponent {
       });
     } catch (error) {
       const errorContainer: ErrorContainer = renderErrorContainer(
-        `Sorry, cards for today were not loaded. ${error}`
+        `Sorry, cards for today were not loaded because of ${error}.`
       );
       todayCardsContainer.append(errorContainer);
     }
