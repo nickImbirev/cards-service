@@ -5,6 +5,9 @@ import { ErrorContainer, renderErrorContainer } from '../errorMessageComponent';
 
 export type TodayCardsContainer = HTMLElement;
 type TodayCardsList = Array<string>;
+type ResponseBody = {
+  cards: TodayCardsList;
+};
 
 export class TodayCardsComponent {
   async render(): Promise<TodayCardsContainer> {
@@ -12,23 +15,27 @@ export class TodayCardsComponent {
       'main',
       'today-cards'
     );
-    const response = await get();
-    const data = await response.json();
 
-    if (data) {
-      const todayCardsList: TodayCardsList = data.cards;
+    let response: Response;
+    let data: ResponseBody | undefined;
 
-      todayCardsList.forEach((todayCardData) => {
-        const renderedTodayCard = renderTodayCard(todayCardData);
-        todayCardsContainer.append(renderedTodayCard);
-      });
-    } else {
+    try {
+      response = await get();
+      data = await response.json();
+    } catch (error) {
       const errorContainer: ErrorContainer = renderErrorContainer(
-        'Sorry, cards for today were not loaded...'
+        `Sorry, cards for today were not loaded because of ${error}.`
       );
       todayCardsContainer.append(errorContainer);
     }
 
+    if (data) {
+      const todayCardsList: TodayCardsList = data.cards;
+      todayCardsList.forEach((todayCardData) => {
+        const renderedTodayCard = renderTodayCard(todayCardData);
+        todayCardsContainer.append(renderedTodayCard);
+      });
+    }
     return todayCardsContainer;
   }
 }
