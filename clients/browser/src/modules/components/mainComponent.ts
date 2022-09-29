@@ -9,7 +9,6 @@ import {
 } from './updateTodayCardsBtnComponent';
 
 export type MainComponent = HTMLElement;
-type MainChildComponents = [Promise<TodayCardsContainer>, Button];
 
 export const renderMainComponent = async (): Promise<MainComponent> => {
   const mainComponent: MainComponent = createNode('main', 'main');
@@ -18,13 +17,8 @@ export const renderMainComponent = async (): Promise<MainComponent> => {
     new TodayCardsComponent().render();
   const renderedUpdateTodayCardsBtn: Button = renderUpdateTodayCardsButton();
 
-  const mainComponents: MainChildComponents = [
-    renderedTodayCards,
-    renderedUpdateTodayCardsBtn,
-  ];
-  mainComponents.forEach(async (component) =>
-    mainComponent.append(await component)
-  );
+  mainComponent.append(await renderedTodayCards);
+  mainComponent.append(renderedUpdateTodayCardsBtn);
 
   return mainComponent;
 };

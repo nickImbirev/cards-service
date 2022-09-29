@@ -15,7 +15,7 @@ const updateTodayCards = async (): Promise<void> => {
     const renderedTodayCards: Promise<TodayCardsContainer> =
       new TodayCardsComponent().render();
 
-    main.append(await renderedTodayCards);
+    main.prepend(await renderedTodayCards);
   }
 };
 
