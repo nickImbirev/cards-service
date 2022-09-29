@@ -12,7 +12,7 @@ type ResponseBody = {
 export class TodayCardsComponent {
   async render(): Promise<TodayCardsContainer> {
     const todayCardsContainer: TodayCardsContainer = createNode(
-      'main',
+      'div',
       'today-cards'
     );
 
