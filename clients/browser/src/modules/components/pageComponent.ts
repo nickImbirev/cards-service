@@ -1,10 +1,6 @@
-import {
-  TodayCardsComponent,
-  TodayCardsContainer,
-} from './today-cards/todayCardsComponent';
+import { renderMainComponent, MainComponent } from './mainComponent';
 
 export const renderPage = async (): Promise<void> => {
-  const renderedTodayCards: Promise<TodayCardsContainer> =
-    new TodayCardsComponent().render();
-  document.body.append(await renderedTodayCards);
+  const renderedMainComponent: Promise<MainComponent> = renderMainComponent();
+  document.body.append(await renderedMainComponent);
 };
