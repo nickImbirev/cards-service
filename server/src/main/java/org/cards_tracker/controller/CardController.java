@@ -10,7 +10,9 @@ import org.cards_tracker.controller.dto.ErrorDto;
 import org.cards_tracker.controller.error.EndpointRegistrationException;
 import org.cards_tracker.error.CardAlreadyExistsException;
 import org.cards_tracker.error.IncorrectCardTitleException;
-import org.cards_tracker.service.CardService;
+import org.cards_tracker.error.NotExistingCardException;
+import org.cards_tracker.service.CardRegistry;
+import org.cards_tracker.service.TodayCardsService;
 import org.eclipse.jetty.http.HttpMethod;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -22,7 +24,7 @@ public class CardController {
 
     public static void registerCreateCardEndpoint(@NotNull final Javalin app,
                                                   @NotNull final ObjectMapper objectMapper,
-                                                  @NotNull final CardService cardService) throws EndpointRegistrationException {
+                                                  @NotNull final CardRegistry cardRegistry) throws EndpointRegistrationException {
         final OpenApiDocumentation apiDocumentation = OpenApiBuilder
                 .document()
                 .operation(operation -> {
@@ -48,7 +50,7 @@ public class CardController {
                 log.debug("Create card request body: " + cardToCreate + ".");
                 String cardTitle = cardToCreate.getTitle();
                 try {
-                    cardService.createCard(cardTitle);
+                    cardRegistry.createCard(cardTitle);
                 } catch (IncorrectCardTitleException | CardAlreadyExistsException e) {
                     log.debug("Card: " + cardTitle + " was not created because of: " + e.getMessage() + ".");
                     ctx
@@ -67,7 +69,8 @@ public class CardController {
 
     public static void registerDeleteCardEndpoint(@NotNull final Javalin app,
                                                   @NotNull final ObjectMapper objectMapper,
-                                                  @NotNull final CardService cardService)
+                                                  @NotNull final CardRegistry cardRegistry,
+                                                  @NotNull final TodayCardsService todayCardsService)
             throws EndpointRegistrationException {
         final OpenApiDocumentation apiDocumentation = OpenApiBuilder
                 .document()
@@ -92,7 +95,13 @@ public class CardController {
                     return;
                 }
                 String cardTitle = cardToCreate.getTitle();
-                cardService.removeCard(cardTitle);
+                try {
+                    todayCardsService.completeCardForToday(cardTitle);
+                    log.debug("Today card: " + cardTitle + " was completed.");
+                } catch (NotExistingCardException e) {
+                    log.debug("Today card: " + cardTitle + " was not completed because of: " + e.getMessage() + ".");
+                }
+                cardRegistry.removeCard(cardTitle);
                 log.debug("Card: " + cardTitle + " was deleted.");
                 ctx.status(HttpCode.NO_CONTENT);
                 log.info("Delete card request for card: " + cardTitle + " was successful.");
