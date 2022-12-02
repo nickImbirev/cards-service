@@ -1,5 +1,6 @@
 package org.cards_tracker.service;
 
+import org.cards_tracker.domain.Card;
 import org.cards_tracker.error.CardAlreadyExistsException;
 import org.cards_tracker.error.NotExistingCardException;
 import org.jetbrains.annotations.NotNull;
@@ -9,8 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -27,36 +27,26 @@ public class ScheduledInMemoryTodayCardsService implements TodayCardsService {
     @NotNull
     private final Integer maxCardsForToday;
     @NotNull
-    private final ScheduledFuture<?> scheduledTask;
-
-    @NotNull
     private List<String> cardsForToday = new ArrayList<>();
 
-    public ScheduledInMemoryTodayCardsService(@NotNull final CardRegistry cardRegistry,
+    public ScheduledInMemoryTodayCardsService(@NotNull final ScheduledExecutorService scheduledTaskExecutor,
+                                              @NotNull final CardRegistry cardRegistry,
                                               @NotNull final TimeUnit timeUnit, @NotNull final Long period,
                                               @NotNull final Integer maxCardsForToday) {
         this.cardRegistry = cardRegistry;
         this.maxCardsForToday = maxCardsForToday;
-        this.scheduledTask = Executors.newSingleThreadScheduledExecutor()
-                .scheduleAtFixedRate(this::fillTheCardsForToday, 0, period, timeUnit);
+        scheduledTaskExecutor.scheduleAtFixedRate(this::fillTheCardsForToday, 0, period, timeUnit);
         log.debug("Today cards preparation schedule: once per " + period + " " + timeUnit + " was configured.");
         log.debug("Today max cards number: " + maxCardsForToday + " was configured.");
     }
 
     void fillTheCardsForToday() {
         cardsForToday = cardRegistry.getPrioritizedCards().stream()
+                .map(Card::getTitle)
                 .limit(maxCardsForToday)
                 .peek(title -> log.debug("Card: " + title + " was added for today."))
                 .collect(Collectors.toList());
         log.debug("Cards for today were formed with " + cardsForToday.size() + " cards.");
-    }
-
-    void terminate() {
-        try {
-            this.scheduledTask.cancel(false);
-        } catch (Exception e) {
-            // do nothing
-        }
     }
 
     @Override
@@ -106,7 +96,11 @@ public class ScheduledInMemoryTodayCardsService implements TodayCardsService {
             log.debug("Card with a title: " + title + " does not exist in the today cards list.");
             throw new NotExistingCardException(title);
         }
-        cardRegistry.bottomCardPriority(title);
+        try {
+            cardRegistry.bottomCardPriority(title);
+        } catch (NotExistingCardException e) {
+            log.debug("Card with a title: " + title + " does not exist in the registry.");
+        }
         log.info("Today card with title: " + title + " was completed.");
     }
 }
