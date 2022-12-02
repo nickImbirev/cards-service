@@ -69,7 +69,9 @@ public class InMemoryCardsUpdateScheduler implements CardsUpdateScheduler {
                                         @NotNull final String title,
                                         @NotNull final CardPriorityUpdateSchedule priorityUpdateSchedule)
             throws NotExistingCardException {
+        log.debug("Attempt to schedule a card: " + title + " priority update started at: " + from + ".");
         if (!cardRegistry.isCardExist(title)) {
+            log.debug("Card: " + title + " was not found to schedule a priority update.");
             throw new NotExistingCardException(title);
         }
         final LocalDateTime nextPriorityUpdate = nextPriorityUpdateFrom(priorityUpdateSchedule, from);
@@ -86,6 +88,7 @@ public class InMemoryCardsUpdateScheduler implements CardsUpdateScheduler {
             );
             log.debug("New card with title: " + title + " was scheduled to execute at: " + nextPriorityUpdate + ".");
         }
+        log.info("Card: " + title + " priority update was scheduled.");
     }
 
     @NotNull
@@ -104,12 +107,14 @@ public class InMemoryCardsUpdateScheduler implements CardsUpdateScheduler {
     }
 
     void updateCardsNewPriorityLevel(@NotNull final LocalDateTime from) {
+        log.debug("Cards sync started at: " + from + ".");
         ScheduledDetails scheduledDetails = scheduledCards.get(from);
         if (scheduledDetails == null) {
+            log.debug("No scheduled cards found for the time: " + from + ".");
             return;
         }
         final Set<String> cards = scheduledDetails.scheduledCards;
-        log.debug("Cards sync started for cards: " + String.join(",", cards) + ".");
+        log.debug("Cards sync started at: " + from + " for cards: " + String.join(",", cards) + ".");
         cards.forEach((title) -> {
             try {
                 cardRegistry.increaseCardPriority(title);
@@ -133,7 +138,7 @@ public class InMemoryCardsUpdateScheduler implements CardsUpdateScheduler {
                 log.debug("Card with title: " + title + " was scheduled to execute at: " + nextPriorityUpdate + ".");
             }
         });
-        log.info("Cards sync ended.");
+        log.info("Cards sync started at:" + from + " was completed.");
     }
 
     @NotNull
