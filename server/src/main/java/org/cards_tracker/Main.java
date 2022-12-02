@@ -9,14 +9,14 @@ import io.swagger.v3.oas.models.info.Info;
 import org.cards_tracker.controller.CardController;
 import org.cards_tracker.controller.DailyController;
 import org.cards_tracker.controller.error.EndpointRegistrationException;
-import org.cards_tracker.service.CardRegistry;
-import org.cards_tracker.service.ScheduledInMemoryCardRegistry;
-import org.cards_tracker.service.ScheduledInMemoryTodayCardsService;
-import org.cards_tracker.service.TodayCardsService;
+import org.cards_tracker.error.IncorrectCardPriorityScheduleException;
+import org.cards_tracker.service.*;
 import org.eclipse.jetty.util.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
@@ -126,13 +126,29 @@ public class Main {
         }).start(8081);
 
         final ObjectMapper objectMapper = new ObjectMapper();
-        CardRegistry cardRegistry =
-                new ScheduledInMemoryCardRegistry(timeUnit, period);
+        final CardRegistry cardRegistry = new InMemoryCardRegistry();
+        final ScheduledExecutorService applicationExecutorService = Executors.newSingleThreadScheduledExecutor();
+        final CardsUpdateScheduler priorityUpdateScheduler;
+        try {
+            priorityUpdateScheduler = new InMemoryCardsUpdateScheduler(
+                    applicationExecutorService,
+                    cardRegistry,
+                    timeUnit, period
+            );
+        } catch (IncorrectCardPriorityScheduleException e) {
+            log.error(e.getMessage());
+            return;
+        }
         TodayCardsService todayCardsService =
-                new ScheduledInMemoryTodayCardsService(cardRegistry, timeUnit, period, maxCardsForToday);
+                new ScheduledInMemoryTodayCardsService(
+                        applicationExecutorService,
+                        cardRegistry,
+                        timeUnit, period,
+                        maxCardsForToday
+                );
 
         try {
-            CardController.registerCreateCardEndpoint(app, objectMapper, cardRegistry);
+            CardController.registerCreateScheduledCardEndpoint(app, objectMapper, cardRegistry, priorityUpdateScheduler);
             log.debug("Create card API has been registered.");
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());

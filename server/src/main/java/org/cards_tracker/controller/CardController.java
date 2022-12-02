@@ -8,10 +8,12 @@ import io.javalin.plugin.openapi.dsl.OpenApiDocumentation;
 import org.cards_tracker.controller.dto.Card;
 import org.cards_tracker.controller.dto.ErrorDto;
 import org.cards_tracker.controller.error.EndpointRegistrationException;
+import org.cards_tracker.domain.CardPriority;
 import org.cards_tracker.error.CardAlreadyExistsException;
 import org.cards_tracker.error.IncorrectCardTitleException;
 import org.cards_tracker.error.NotExistingCardException;
 import org.cards_tracker.service.CardRegistry;
+import org.cards_tracker.service.CardsUpdateScheduler;
 import org.cards_tracker.service.TodayCardsService;
 import org.eclipse.jetty.http.HttpMethod;
 import org.jetbrains.annotations.NotNull;
@@ -22,13 +24,15 @@ public class CardController {
 
     private static final Logger log = LoggerFactory.getLogger(CardController.class);
 
-    public static void registerCreateCardEndpoint(@NotNull final Javalin app,
-                                                  @NotNull final ObjectMapper objectMapper,
-                                                  @NotNull final CardRegistry cardRegistry) throws EndpointRegistrationException {
+    public static void registerCreateScheduledCardEndpoint(@NotNull final Javalin app,
+                                                           @NotNull final ObjectMapper objectMapper,
+                                                           @NotNull final CardRegistry cardRegistry,
+                                                           @NotNull final CardsUpdateScheduler priorityUpdateScheduler)
+            throws EndpointRegistrationException {
         final OpenApiDocumentation apiDocumentation = OpenApiBuilder
                 .document()
                 .operation(operation -> {
-                    operation.description("Create brand new card (task).");
+                    operation.description("Create brand new scheduled card (task).");
                 })
                 .body(Card.class)
                 .json(String.valueOf(HttpCode.BAD_REQUEST.getStatus()), ErrorDto.class)
@@ -36,7 +40,7 @@ public class CardController {
         final String path = "/card";
         try {
             app.post(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
-                log.debug("Create card request has been triggered.");
+                log.debug("Create scheduled card request has been triggered.");
                 final Card cardToCreate;
                 try {
                     cardToCreate = ctx.bodyAsClass(Card.class);
@@ -47,10 +51,11 @@ public class CardController {
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
                     return;
                 }
-                log.debug("Create card request body: " + cardToCreate + ".");
+                log.debug("Create scheduled card request body: " + cardToCreate + ".");
                 String cardTitle = cardToCreate.getTitle();
+                final CardPriority initialCardPriority = cardRegistry.getInitialCardPriority();
                 try {
-                    cardRegistry.createCard(cardTitle);
+                    cardRegistry.createCard(new org.cards_tracker.domain.Card(cardTitle, initialCardPriority));
                 } catch (IncorrectCardTitleException | CardAlreadyExistsException e) {
                     log.debug("Card: " + cardTitle + " was not created because of: " + e.getMessage() + ".");
                     ctx
@@ -59,6 +64,18 @@ public class CardController {
                     return;
                 }
                 log.debug("Card: " + cardTitle + " was created.");
+                try {
+                    priorityUpdateScheduler.scheduleDefaultPriorityUpdate(cardTitle);
+                } catch (NotExistingCardException e) {
+                    cardRegistry.removeCard(cardTitle);
+                    log.debug("Card: " + cardTitle + " was removed, because the next priority update cannot be scheduled.");
+                    log.debug("Card: " + cardTitle + " next priority update was not scheduled because of: " + e.getMessage() + ".");
+                    ctx
+                            .status(HttpCode.BAD_REQUEST)
+                            .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
+                    return;
+                }
+                log.debug("Card: " + cardTitle + " next priority update was scheduled.");
                 ctx.status(HttpCode.CREATED);
                 log.info("Create card request for card: " + cardTitle + " was successful.");
             }));
