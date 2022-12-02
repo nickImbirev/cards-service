@@ -41,6 +41,7 @@ public class ScheduledInMemoryTodayCardsService implements TodayCardsService {
     }
 
     void fillTheCardsForToday() {
+        log.debug("List of cards for today with a limit of: " + maxCardsForToday +" started to being formed.");
         cardsForToday = cardRegistry.getPrioritizedCards().stream()
                 .map(Card::getTitle)
                 .limit(maxCardsForToday)

@@ -138,7 +138,7 @@ public class InMemoryCardsUpdateScheduler implements CardsUpdateScheduler {
                 log.debug("Card with title: " + title + " was scheduled to execute at: " + nextPriorityUpdate + ".");
             }
         });
-        log.info("Cards sync started at:" + from + " was completed.");
+        log.info("Cards sync started at: " + from + " was completed.");
     }
 
     @NotNull
