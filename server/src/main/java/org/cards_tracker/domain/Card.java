@@ -45,4 +45,12 @@ public class Card {
     public int hashCode() {
         return Objects.hash(title, cardPriority);
     }
+
+    @Override
+    public String toString() {
+        return "Card{" +
+                "title='" + title + '\'' +
+                ", cardPriority=" + cardPriority +
+                '}';
+    }
 }
