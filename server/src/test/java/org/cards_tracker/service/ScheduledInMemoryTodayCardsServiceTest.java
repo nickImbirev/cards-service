@@ -35,10 +35,6 @@ public class ScheduledInMemoryTodayCardsServiceTest {
                 TimeUnit.MINUTES,
                 Long.MAX_VALUE,
                 Integer.MAX_VALUE);
-        // disable scheduling
-        Mockito
-                .when(delayedTasksExecutor.scheduleWithFixedDelay(Mockito.any(), Mockito.anyLong(), Mockito.anyInt(), Mockito.any()))
-                .thenReturn(null);
     }
 
     @Test
