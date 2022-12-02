@@ -36,6 +36,7 @@ public class CardController {
                 })
                 .body(Card.class)
                 .json(String.valueOf(HttpCode.BAD_REQUEST.getStatus()), ErrorDto.class)
+                .json(String.valueOf(HttpCode.INTERNAL_SERVER_ERROR.getStatus()), ErrorDto.class)
                 .result(String.valueOf(HttpCode.CREATED.getStatus()));
         final String path = "/card";
         try {
@@ -67,11 +68,9 @@ public class CardController {
                 try {
                     priorityUpdateScheduler.scheduleDefaultPriorityUpdate(cardTitle);
                 } catch (NotExistingCardException e) {
-                    cardRegistry.removeCard(cardTitle);
-                    log.debug("Card: " + cardTitle + " was removed, because the next priority update cannot be scheduled.");
                     log.debug("Card: " + cardTitle + " next priority update was not scheduled because of: " + e.getMessage() + ".");
                     ctx
-                            .status(HttpCode.BAD_REQUEST)
+                            .status(HttpCode.INTERNAL_SERVER_ERROR)
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
                     return;
                 }
