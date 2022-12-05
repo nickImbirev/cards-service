@@ -44,7 +44,7 @@ public class DailyController {
                     log.debug("Get today cards response body: " + responseBody + ".");
                     ctx.json(responseBody);
                 } catch (Exception e) {
-                    log.debug("Get today cards request was not successful because of: " + e.getMessage() + ".");
+                    log.error("Get today cards request was not successful because of: " + e.getMessage() + ".");
                     ctx
                             .status(HttpCode.INTERNAL_SERVER_ERROR)
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));

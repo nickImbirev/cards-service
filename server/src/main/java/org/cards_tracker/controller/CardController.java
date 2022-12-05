@@ -6,10 +6,13 @@ import io.javalin.http.HttpCode;
 import io.javalin.plugin.openapi.dsl.OpenApiBuilder;
 import io.javalin.plugin.openapi.dsl.OpenApiDocumentation;
 import org.cards_tracker.controller.dto.Card;
+import org.cards_tracker.controller.dto.PriorityUpdateSchedule;
 import org.cards_tracker.controller.dto.ErrorDto;
 import org.cards_tracker.controller.error.EndpointRegistrationException;
 import org.cards_tracker.domain.CardPriority;
+import org.cards_tracker.domain.CardPriorityUpdateSchedule;
 import org.cards_tracker.error.CardAlreadyExistsException;
+import org.cards_tracker.error.IncorrectCardPriorityScheduleException;
 import org.cards_tracker.error.IncorrectCardTitleException;
 import org.cards_tracker.error.NotExistingCardException;
 import org.cards_tracker.service.CardRegistry;
@@ -57,22 +60,44 @@ public class CardController {
                 final CardPriority initialCardPriority = cardRegistry.getInitialCardPriority();
                 try {
                     cardRegistry.createCard(new org.cards_tracker.domain.Card(cardTitle, initialCardPriority));
-                } catch (IncorrectCardTitleException | CardAlreadyExistsException e) {
+                } catch (IncorrectCardTitleException e) {
                     log.debug("Card: " + cardTitle + " was not created because of: " + e.getMessage() + ".");
                     ctx
                             .status(HttpCode.BAD_REQUEST)
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
                     return;
-                }
-                log.debug("Card: " + cardTitle + " was created.");
-                try {
-                    priorityUpdateScheduler.scheduleDefaultPriorityUpdate(cardTitle);
-                } catch (NotExistingCardException e) {
-                    log.debug("Card: " + cardTitle + " next priority update was not scheduled because of: " + e.getMessage() + ".");
+                } catch (CardAlreadyExistsException e) {
+                    log.error("Card: " + cardTitle + " was not created because of: " + e.getMessage() + ".");
                     ctx
                             .status(HttpCode.INTERNAL_SERVER_ERROR)
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
                     return;
+                }
+                log.debug("Card: " + cardTitle + " was created.");
+                final PriorityUpdateSchedule priorityUpdateSchedule = cardToCreate.getPriorityUpdateSchedule();
+                if (priorityUpdateSchedule != null) {
+                    try {
+                        priorityUpdateScheduler.schedulePriorityUpdate(
+                                cardTitle,
+                                new CardPriorityUpdateSchedule(priorityUpdateSchedule.getTimeUnit(), priorityUpdateSchedule.getPeriod())
+                        );
+                    } catch (NotExistingCardException | IncorrectCardPriorityScheduleException e) {
+                        log.error("Card: " + cardTitle + " next priority update was not scheduled because of: " + e.getMessage() + ".");
+                        ctx
+                                .status(HttpCode.INTERNAL_SERVER_ERROR)
+                                .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
+                        return;
+                    }
+                } else {
+                    try {
+                        priorityUpdateScheduler.scheduleDefaultPriorityUpdate(cardTitle);
+                    } catch (NotExistingCardException e) {
+                        log.error("Card: " + cardTitle + " next priority update was not scheduled because of: " + e.getMessage() + ".");
+                        ctx
+                                .status(HttpCode.INTERNAL_SERVER_ERROR)
+                                .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
+                        return;
+                    }
                 }
                 log.debug("Card: " + cardTitle + " next priority update was scheduled.");
                 ctx.status(HttpCode.CREATED);
