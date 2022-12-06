@@ -139,7 +139,7 @@ public class Main {
             log.error(e.getMessage());
             return;
         }
-        TodayCardsService todayCardsService =
+        final TodayCardsService todayCardsService =
                 new ScheduledInMemoryTodayCardsService(
                         applicationExecutorService,
                         cardRegistry,
