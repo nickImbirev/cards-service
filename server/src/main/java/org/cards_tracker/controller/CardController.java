@@ -79,9 +79,9 @@ public class CardController {
                     try {
                         priorityUpdateScheduler.schedulePriorityUpdate(
                                 cardTitle,
-                                new CardPriorityUpdateSchedule(priorityUpdateSchedule.getTimeUnit(), priorityUpdateSchedule.getPeriod())
+                                new CardPriorityUpdateSchedule(priorityUpdateSchedule.getSdkTimeUnit(), priorityUpdateSchedule.getPeriod())
                         );
-                    } catch (NotExistingCardException | IncorrectCardPriorityScheduleException e) {
+                    } catch (NotExistingCardException | IncorrectCardPriorityScheduleException | IllegalArgumentException e) {
                         log.error("Card: " + cardTitle + " next priority update was not scheduled because of: " + e.getMessage() + ".");
                         ctx
                                 .status(HttpCode.INTERNAL_SERVER_ERROR)

@@ -43,7 +43,7 @@ There is a possibility to configure the following service values:
   - can be any integer starts from 1 to 100
 - day cards preparation schedule
   - the schedule period can be any integer starts from 1 (second argument in the list)
-  - the time unit can be any value from the range: (DAYS, HOURS, MINUTES, SECONDS, MILLISECONDS) (third argument in the list)
+  - the time unit can be any value from the range: (DAYS, HOURS, MINUTES, SECONDS) (third argument in the list)
 
 Example: `gradle run --args='5 3 MINUTES'` (maximum number cards per day - 5, sync schedule: every 3 minutes).
 
