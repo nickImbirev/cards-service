@@ -25,6 +25,8 @@ public class InMemoryCardsUpdateScheduler implements CardsUpdateScheduler {
     @NotNull
     private final ScheduledExecutorService scheduledTasksExecutor;
     @NotNull
+    private final PriorityUpdateCalendar priorityUpdateCalendar;
+    @NotNull
     private final Map<LocalDateTime, ScheduledDetails> scheduledCards = new HashMap<>();
 
     static class ScheduledDetails {
@@ -44,11 +46,13 @@ public class InMemoryCardsUpdateScheduler implements CardsUpdateScheduler {
     }
 
     public InMemoryCardsUpdateScheduler(@NotNull final ScheduledExecutorService scheduledTasksExecutor,
+                                        @NotNull final PriorityUpdateCalendar priorityUpdateCalendar,
                                         @NotNull final CardRegistry cardRegistry,
                                         @NotNull final TimeUnit applicationDayTimeUnit,
                                         @NotNull final Long updateSchedulePeriod) throws IncorrectCardPriorityScheduleException {
         this.scheduledTasksExecutor = scheduledTasksExecutor;
         this.cardRegistry = cardRegistry;
+        this.priorityUpdateCalendar = priorityUpdateCalendar;
         this.defaultPriorityUpdateSchedule = new CardPriorityUpdateSchedule(applicationDayTimeUnit, updateSchedulePeriod);
         log.debug("Default card priority update schedule: " + defaultPriorityUpdateSchedule + " was configured.");
     }
@@ -74,7 +78,7 @@ public class InMemoryCardsUpdateScheduler implements CardsUpdateScheduler {
             log.debug("Card: " + title + " was not found to schedule a priority update.");
             throw new NotExistingCardException(title);
         }
-        final LocalDateTime nextPriorityUpdate = nextPriorityUpdateFrom(priorityUpdateSchedule, from);
+        final LocalDateTime nextPriorityUpdate = priorityUpdateCalendar.nextPriorityUpdateFrom(priorityUpdateSchedule, from);
         if (scheduledCards.containsKey(nextPriorityUpdate)) {
             scheduledCards.get(nextPriorityUpdate).addCard(title);
             log.debug("New card with title: " + title + " was added to scheduled execution at: " + nextPriorityUpdate + ".");
@@ -89,21 +93,6 @@ public class InMemoryCardsUpdateScheduler implements CardsUpdateScheduler {
             log.debug("New card with title: " + title + " was scheduled to execute at: " + nextPriorityUpdate + ".");
         }
         log.info("Card: " + title + " priority update was scheduled.");
-    }
-
-    @NotNull
-    public LocalDateTime nextPriorityUpdateFrom(@NotNull final CardPriorityUpdateSchedule priorityUpdateSchedule,
-                                                @NotNull final LocalDateTime from) {
-        switch (priorityUpdateSchedule.getTimeUnit()) {
-            case MINUTES:
-                return from.plus(priorityUpdateSchedule.getPeriod(), ChronoUnit.MINUTES).truncatedTo(ChronoUnit.MINUTES);
-            case DAYS:
-                return from.plus(priorityUpdateSchedule.getPeriod(), ChronoUnit.DAYS).truncatedTo(ChronoUnit.DAYS);
-            case HOURS:
-                return from.plus(priorityUpdateSchedule.getPeriod(), ChronoUnit.HOURS).truncatedTo(ChronoUnit.HOURS);
-            default:
-                return from.plus(priorityUpdateSchedule.getPeriod(), ChronoUnit.SECONDS).truncatedTo(ChronoUnit.SECONDS);
-        }
     }
 
     void updateCardsNewPriorityLevel(@NotNull final LocalDateTime from) {
@@ -123,7 +112,7 @@ public class InMemoryCardsUpdateScheduler implements CardsUpdateScheduler {
                 return;
             }
             log.debug("Card: " + title + " priority was updated.");
-            final LocalDateTime nextPriorityUpdate = nextPriorityUpdateFrom(scheduledDetails.schedule, from);
+            final LocalDateTime nextPriorityUpdate = priorityUpdateCalendar.nextPriorityUpdateFrom(scheduledDetails.schedule, from);
             if (scheduledCards.containsKey(nextPriorityUpdate)) {
                 scheduledCards.get(nextPriorityUpdate).addCard(title);
                 log.debug("Card with title: " + title + " was added to scheduled execution at: " + nextPriorityUpdate + ".");

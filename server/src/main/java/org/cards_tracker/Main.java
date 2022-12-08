@@ -128,10 +128,12 @@ public class Main {
         final ObjectMapper objectMapper = new ObjectMapper();
         final CardRegistry cardRegistry = new InMemoryCardRegistry();
         final ScheduledExecutorService applicationExecutorService = Executors.newSingleThreadScheduledExecutor();
+        final PriorityUpdateCalendar priorityUpdateCalendar = new ScheduleBasedPriorityUpdateCalendar();
         final CardsUpdateScheduler priorityUpdateScheduler;
         try {
             priorityUpdateScheduler = new InMemoryCardsUpdateScheduler(
                     applicationExecutorService,
+                    priorityUpdateCalendar,
                     cardRegistry,
                     timeUnit, period
             );
