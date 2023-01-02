@@ -9,12 +9,14 @@ import io.swagger.v3.oas.models.info.Info;
 import org.cards_tracker.controller.CardController;
 import org.cards_tracker.controller.DailyController;
 import org.cards_tracker.controller.error.EndpointRegistrationException;
-import org.cards_tracker.service.CardService;
-import org.cards_tracker.service.ScheduledInMemoryCardService;
+import org.cards_tracker.error.IncorrectCardPriorityScheduleException;
+import org.cards_tracker.service.*;
 import org.eclipse.jetty.util.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
@@ -124,40 +126,60 @@ public class Main {
         }).start(8081);
 
         final ObjectMapper objectMapper = new ObjectMapper();
-        CardService cardService =
-                new ScheduledInMemoryCardService(timeUnit, period, maxCardsForToday);
+        final CardRegistry cardRegistry = new InMemoryCardRegistry();
+        final ScheduledExecutorService applicationExecutorService = Executors.newSingleThreadScheduledExecutor();
+        final PriorityUpdateCalendar priorityUpdateCalendar = new ScheduleBasedPriorityUpdateCalendar();
+        final CardsUpdateScheduler priorityUpdateScheduler;
+        try {
+            priorityUpdateScheduler = new InMemoryCardsUpdateScheduler(
+                    applicationExecutorService,
+                    priorityUpdateCalendar,
+                    cardRegistry,
+                    timeUnit, period
+            );
+        } catch (IncorrectCardPriorityScheduleException e) {
+            log.error(e.getMessage());
+            return;
+        }
+        final TodayCardsService todayCardsService =
+                new ScheduledInMemoryTodayCardsService(
+                        applicationExecutorService,
+                        cardRegistry,
+                        timeUnit, period,
+                        maxCardsForToday
+                );
 
         try {
-            CardController.registerCreateCardEndpoint(app, objectMapper, cardService);
+            CardController.registerCreateScheduledCardEndpoint(app, objectMapper, cardRegistry, priorityUpdateScheduler);
             log.debug("Create card API has been registered.");
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
         try {
-            DailyController.registerCompleteCardEndpoint(app, objectMapper, cardService);
+            DailyController.registerCompleteCardEndpoint(app, objectMapper, todayCardsService);
             log.debug("Complete today card API has been registered.");
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
         try {
-            CardController.registerDeleteCardEndpoint(app, objectMapper, cardService);
+            CardController.registerDeleteCardEndpoint(app, objectMapper, cardRegistry, todayCardsService);
             log.debug("Create card API has been registered.");
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
         try {
-            DailyController.registerGetCardsEndpoint(app, objectMapper, cardService);
+            DailyController.registerGetCardsEndpoint(app, objectMapper, todayCardsService);
             log.debug("Get today cards API has been registered.");
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
         try {
-            DailyController.registerAddAdditionalCardEndpoint(app, objectMapper, cardService);
+            DailyController.registerAddAdditionalCardEndpoint(app, objectMapper, todayCardsService);
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }
         try {
-            DailyController.registerReshuffleCardsEndpoint(app, objectMapper, cardService);
+            DailyController.registerReshuffleCardsEndpoint(app, objectMapper, todayCardsService);
         } catch (EndpointRegistrationException e) {
             log.warn(e.getMessage());
         }

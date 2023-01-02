@@ -11,7 +11,7 @@ import org.cards_tracker.controller.dto.ErrorDto;
 import org.cards_tracker.controller.error.EndpointRegistrationException;
 import org.cards_tracker.error.CardAlreadyExistsException;
 import org.cards_tracker.error.NotExistingCardException;
-import org.cards_tracker.service.CardService;
+import org.cards_tracker.service.TodayCardsService;
 import org.eclipse.jetty.http.HttpMethod;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -25,7 +25,7 @@ public class DailyController {
 
     public static void registerGetCardsEndpoint(@NotNull final Javalin app,
                                                 @NotNull final ObjectMapper objectMapper,
-                                                @NotNull final CardService cardService)
+                                                @NotNull final TodayCardsService todayCardsService)
             throws EndpointRegistrationException {
         final OpenApiDocumentation apiDocumentation = OpenApiBuilder
                 .document()
@@ -38,13 +38,13 @@ public class DailyController {
         try {
             app.get(path, OpenApiBuilder.documented(apiDocumentation, ctx -> {
                 log.debug("Get today cards request has been triggered.");
-                final List<String> cardsForToday = cardService.getCardsForToday();
+                final List<String> cardsForToday = todayCardsService.getCardsForToday();
                 try {
                     final Cards responseBody = new Cards(cardsForToday);
                     log.debug("Get today cards response body: " + responseBody + ".");
                     ctx.json(responseBody);
                 } catch (Exception e) {
-                    log.debug("Get today cards request was not successful because of: " + e.getMessage() + ".");
+                    log.error("Get today cards request was not successful because of: " + e.getMessage() + ".");
                     ctx
                             .status(HttpCode.INTERNAL_SERVER_ERROR)
                             .result(objectMapper.writeValueAsBytes(new ErrorDto(e.getMessage())));
@@ -60,7 +60,7 @@ public class DailyController {
 
     public static void registerReshuffleCardsEndpoint(@NotNull final Javalin app,
                                                       @NotNull final ObjectMapper objectMapper,
-                                                      @NotNull final CardService cardService)
+                                                      @NotNull final TodayCardsService todayCardsService)
             throws EndpointRegistrationException {
         final OpenApiDocumentation apiDocumentation = OpenApiBuilder
                 .document()
@@ -87,7 +87,7 @@ public class DailyController {
                 }
                 log.debug("Reshuffle today cards request body: " + orderedCards + ".");
                 try {
-                    cardService.reshuffleTodayCards(orderedCards.getCards());
+                    todayCardsService.reshuffleTodayCards(orderedCards.getCards());
                 } catch (CardAlreadyExistsException | NotExistingCardException e) {
                     log.debug("Reshuffling of today cards was not completed because of: " + e.getMessage() + ".");
                     ctx
@@ -106,7 +106,7 @@ public class DailyController {
 
     public static void registerCompleteCardEndpoint(@NotNull final Javalin app,
                                                     @NotNull final ObjectMapper objectMapper,
-                                                    @NotNull final CardService cardService)
+                                                    @NotNull final TodayCardsService todayCardsService)
             throws EndpointRegistrationException {
         final OpenApiDocumentation apiDocumentation = OpenApiBuilder
                 .document()
@@ -134,7 +134,7 @@ public class DailyController {
                 log.debug("Complete today card request body: " + cardToCreate + ".");
                 final String cardTitle = cardToCreate.getTitle();
                 try {
-                    cardService.completeCardForToday(cardTitle);
+                    todayCardsService.completeCardForToday(cardTitle);
                 } catch (NotExistingCardException e) {
                     log.debug("Today card: " + cardTitle + " was not completed because of: " + e.getMessage() + ".");
                     ctx
@@ -153,7 +153,7 @@ public class DailyController {
 
     public static void registerAddAdditionalCardEndpoint(@NotNull final Javalin app,
                                                          @NotNull final ObjectMapper objectMapper,
-                                                         @NotNull final CardService cardService)
+                                                         @NotNull final TodayCardsService todayCardsService)
             throws EndpointRegistrationException {
         final OpenApiDocumentation apiDocumentation = OpenApiBuilder
                 .document()
@@ -181,7 +181,7 @@ public class DailyController {
                 log.debug("Add additional card for today request body: " + cardToAdd + ".");
                 final String cardTitle = cardToAdd.getTitle();
                 try {
-                    cardService.addAdditionalCardForToday(cardTitle);
+                    todayCardsService.addAdditionalCardForToday(cardTitle);
                 } catch (NotExistingCardException e) {
                     log.debug("An additional card: " + cardTitle + " was not added for today because of: " + e.getMessage() + ".");
                     ctx
